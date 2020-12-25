@@ -35,7 +35,7 @@ def returnnumberpacket(pkt):
     integer = 0
     multiple = 256
     for c in pkt:
-        integer += struct.unpack('B', c)[0] * multiple
+        integer += struct.unpack('B', bytes([c]))[0] * multiple
         multiple = 1
     return integer
 
@@ -43,13 +43,13 @@ def returnnumberpacket(pkt):
 def returnstringpacket(pkt):
     string = ''
     for c in pkt:
-        string += '%02x' % struct.unpack('B', c)[0]
+        string += '%02x' % struct.unpack('B', bytes([c]))[0]
     return string
 
 
 def printpacket(pkt):
     for c in pkt:
-        sys.stdout.write('%02x ' % struct.unpack('B', c)[0])
+        sys.stdout.write('%02x ' % struct.unpack('B', bytes([c]))[0])
 
 
 def get_packed_bdaddr(bdaddr_string):
@@ -103,12 +103,12 @@ def parse_events(sock, loop_count=100):
         ptype, event, plen = struct.unpack('BBB', pkt[:3])
 
         if event == LE_META_EVENT:
-            subevent, = struct.unpack('B', pkt[3])
+            subevent, = struct.unpack('B', pkt[3:4])
             pkt = pkt[4:]
             if subevent == EVT_LE_CONN_COMPLETE:
                 le_handle_connection_complete(pkt)
             elif subevent == EVT_LE_ADVERTISING_REPORT:
-                num_reports = struct.unpack('B', pkt[0])[0]
+                num_reports = struct.unpack('B', pkt[0:1])[0]
                 report_pkt_offset = 0
                 for i in range(0, num_reports):
                     beacons.append({
