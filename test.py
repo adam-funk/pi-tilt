@@ -38,18 +38,18 @@ def to_celsius(fahrenheit):
 def monitor_tilt():
     while True:
         beacons = distinct(blescan.parse_events(sock, 10))
+        print()
+        print('beacons found', len(beacons))
         for beacon in beacons:
             print('beacon', beacon['uuid'])
             if beacon['uuid'] in TILTS.keys():
-                print('beacon', beacon['uuid'])
-                print('color', TILTS[beacon['uuid']])
-                print('timestamp', datetime.datetime.now().isoformat())
-                print('temp', to_celsius(beacon['major']))
-                print('gravity', beacon['minor'])
+                print(' color', TILTS[beacon['uuid']])
+                print(' timestamp', datetime.datetime.now().isoformat())
+                print(' temp', to_celsius(beacon['major']))
+                print(' gravity', beacon['minor'])
             else:
-                print('major', beacon['major'])
-                print('minor', beacon['minor'])
-                print(beacon.keys())
+                print(' major', beacon['major'])
+                print(' minor', beacon['minor'])
         time.sleep(10)
 
 
