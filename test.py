@@ -1,10 +1,12 @@
+#!/usr/bin/env python3
+
 import sys
 import datetime
 import time
 
 import bluetooth._bluetooth as bluez
 
-import blescan1 as blescan
+import blescan as blescan
 
 
 TILTS = {
