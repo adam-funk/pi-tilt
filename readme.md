@@ -1,6 +1,6 @@
 Pytilt
 ==========
-Tool for reading your Tilt brewing hydrometer[1] in python on a rasberry pi and send the data to a server.
+Tool for reading your Tilt brewing hydrometer in python on a rasberry pi and send the data to a server.
 
 
 Installation
@@ -26,8 +26,11 @@ Running Pytilt in the background and on System Start
 Acknowledgements
 ----------------
 The code in blescan-py is adapted from https://github.com/switchdoclabs/iBeacon-Scanner-
+
 The Tilt UUID-to-color mapping is taken from: https://github.com/tbryant/brewometer-nodejs
+
 Systemd-config here: http://www.raspberrypi-spy.co.uk/2015/10/how-to-autorun-a-python-script-on-boot-using-systemd/
 
+https://kvurd.com/blog/tilt-hydrometer-ibeacon-data-format/
 
-[1]: https://tilthydrometer.com/
+https://tilthydrometer.com/
