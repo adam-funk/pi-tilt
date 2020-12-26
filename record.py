@@ -46,7 +46,7 @@ def monitor_tilt(options):
             if beacon['uuid'] in TILTS.keys():
                 color = TILTS[beacon['uuid']]
                 epoch = round(time.time())
-                timestamp = datetime.datetime.now().isoformat())
+                timestamp = datetime.datetime.now().isoformat()
                 gravity = beacon['minor'])
                 temp = to_celsius(beacon['major'])
                 record_data(options, color, epoch, timestamp, gravity, temp)
