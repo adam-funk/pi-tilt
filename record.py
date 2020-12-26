@@ -41,15 +41,18 @@ def monitor_tilt(options):
     for i in range(0, options.nbr_readings):
         if i > 0:
             time.sleep(options.wait)
-        beacons = distinct(blescan.parse_events(sock, 10))
-        for beacon in beacons:
-            if beacon['uuid'] in TILTS.keys():
-                color = TILTS[beacon['uuid']]
-                epoch = round(time.time())
-                timestamp = datetime.datetime.now().isoformat()
-                gravity = beacon['minor']
-                temp = to_celsius(beacon['major'])
-                record_data(options, color, epoch, timestamp, gravity, temp)
+        found = False
+        while not found:
+            beacons = distinct(blescan.parse_events(sock, 10))
+            for beacon in beacons:
+                if beacon['uuid'] in TILTS.keys():
+                    found = True
+                    color = TILTS[beacon['uuid']]
+                    epoch = round(time.time())
+                    timestamp = datetime.datetime.now().isoformat()
+                    gravity = beacon['minor']
+                    temp = to_celsius(beacon['major'])
+                    record_data(options, color, epoch, timestamp, gravity, temp)
     return
 
 
