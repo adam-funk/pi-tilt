@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
     oparser.add_argument("-o", dest="output_file",
                          default=None,
-                         metavar='FILE'
+                         metavar='FILE',
                          help='output file')
 
     oparser.add_argument("-w", dest="wait", 
