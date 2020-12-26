@@ -58,7 +58,7 @@ def monitor_tilt(options):
 
 def record_data(options, color, epoch, timestamp, gravity, temp):
     if options.output_file:
-        with open(options.output_file) as f:
+        with open(options.output_file, 'a') as f:
             writer = csv.writer(f)
             writer.writerow([color, epoch, timestamp, gravity, temp])
     else:
