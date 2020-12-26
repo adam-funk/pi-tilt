@@ -90,7 +90,7 @@ if __name__ == '__main__':
     dev_id = 0
     try:
         sock = bluez.hci_open_dev(dev_id)
-        print('Starting pytilt logger')
+        #print('Starting pytilt logger')
     except:
         print('error accessing bluetooth device...')
         sys.exit(1)
