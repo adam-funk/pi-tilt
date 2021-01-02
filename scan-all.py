@@ -52,7 +52,7 @@ def dump(results, options):
     if options.output_file:
         with open(options.output_file, 'w') as f:
             writer = csv.writer(f)
-            write.writerow(['uuid', 'major', 'minor', 'count'])
+            writer.writerow(['uuid', 'major', 'minor', 'count'])
             for key in keys:
                 row = list(key) + [results[key]]
                 writer.writerow(row)
