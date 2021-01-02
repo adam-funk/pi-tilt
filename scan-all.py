@@ -35,20 +35,20 @@ def distinct(objects):
 
 def monitor(options):
     cutoff = time.time() + 60.0 * options.minutes
-    results = Counter(int)
-    while time.time <= cutoff:
+    results = Counter()
+    while time.time() <= cutoff:
         beacons = distinct(blescan.parse_events(sock, 10))
         for beacon in beacons:
             uuid = beacon['uuid']
             if options.include_tilt or (uuid not in TILTS):
                 key = (uuid, beacon['major'], beacon['minor'])
-                results(key) += 1
+                results[key] += 1
         time.sleep(1)
     return results
 
 
 def dump(results, options):
-    keys = sorted(results.keys)
+    keys = sorted(results.keys())
     if options.output_file:
         with open(options.output_file, 'w') as f:
             writer = csv.writer(f)
@@ -58,7 +58,7 @@ def dump(results, options):
     else:
         for key in keys:
             row = tuple(list(key) + [results[key]])
-            print('%32s %5d %5d %5d' + row)
+            print('%32s %5d %5d %5d' % row)
     return
                                    
 
@@ -67,8 +67,8 @@ if __name__ == '__main__':
                                       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     oparser.add_argument("-m", dest="minutes", 
-                         metavar="N", type=int,
-                         default=1,
+                         metavar="N", type=float,
+                         default=1.0,
                          help='nbr of minutes to scan')
 
     oparser.add_argument("-o", dest="output_file",
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     dev_id = 0
     try:
         sock = bluez.hci_open_dev(dev_id)
-        print('Starting pytilt logger')
+        print('Starting BLE logger')
     except:
         print('error accessing bluetooth device...')
         sys.exit(1)
