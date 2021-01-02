@@ -52,13 +52,15 @@ def dump(results, options):
     if options.output_file:
         with open(options.output_file, 'w') as f:
             writer = csv.writer(f)
+            write.writerow(['uuid', 'major', 'minor', 'count'])
             for key in keys:
                 row = list(key) + [results[key]]
                 writer.writerow(row)
     else:
+        print('%-32s  %5s  %5s  %5s' % ('uuid', 'major', 'minor', 'count'))
         for key in keys:
             row = tuple(list(key) + [results[key]])
-            print('%32s %5d %5d %5d' % row)
+            print('%32s  %5d  %5d  %5d' % row)
     return
                                    
 
