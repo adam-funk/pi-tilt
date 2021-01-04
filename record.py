@@ -49,20 +49,21 @@ def monitor_tilt(options):
                     found = True
                     color = TILTS[beacon['uuid']]
                     epoch = round(time.time())
-                    timestamp = datetime.datetime.now().isoformat()
+                    timestamp = datetime.datetime.now().isoformat(timespec='seconds')
                     gravity = beacon['minor']
-                    temp = to_celsius(beacon['major'])
-                    record_data(options, color, epoch, timestamp, gravity, temp)
+                    fahrenheit = beacon['major']
+                    celsius = to_celsius(fahrenheit)
+                    record_data(options, color, epoch, timestamp, gravity, celsius, fahrenheit)
     return
 
 
-def record_data(options, color, epoch, timestamp, gravity, temp):
+def record_data(options, color, epoch, timestamp, gravity, celsius, fahrenheit):
     if options.output_file:
         with open(options.output_file, 'a') as f:
             writer = csv.writer(f)
-            writer.writerow([color, epoch, timestamp, gravity, temp])
+            writer.writerow([color, epoch, timestamp, gravity, celsius, fahrenheit])
     else:
-        print(color, epoch, timestamp, gravity, temp)
+        print(color, epoch, timestamp, gravity, celsius, fahrenheit)
     return
 
 
