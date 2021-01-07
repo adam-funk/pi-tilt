@@ -37,12 +37,23 @@ def to_celsius(fahrenheit):
     return round((fahrenheit - 32.0) / 1.8, 2)
 
 
+def keep_going(cutoff):
+    if cutoff == None:
+        return True
+    return time.time() < cutoff
+
+
 def monitor_tilt(options):
+    if options.give_up:
+        cutoff  = time.time() + 60 * options.give_up
+    else:
+        cutoff = 0
+        
     for i in range(0, options.nbr_readings):
-        if i > 0:
+        if (i > 0) and keep_going(cutoff):
             time.sleep(options.wait)
         found = False
-        while not found:
+        while keep_going(cutoff) and (not found):
             beacons = distinct(blescan.parse_events(sock, 10))
             for beacon in beacons:
                 if beacon['uuid'] in TILTS.keys():
@@ -74,7 +85,7 @@ if __name__ == '__main__':
     oparser.add_argument("-n", dest="nbr_readings", 
                          metavar="N", type=int,
                          default=1,
-                         help='number of readings')
+                         help='number of readings ')
 
     oparser.add_argument("-o", dest="output_file",
                          default=None,
@@ -85,6 +96,11 @@ if __name__ == '__main__':
                          metavar="N", type=float,
                          default=10.0,
                          help='wait N seconds between readings')
+    
+    oparser.add_argument("-x", dest="give_up", 
+                         metavar="N", type=float,
+                         default=10.0,
+                         help='give up after N minutes')
     
     options = oparser.parse_args()
 
