@@ -50,7 +50,7 @@ def monitor_tilt(options):
         cutoff = 0
         
     for i in range(0, options.nbr_readings):
-        if verbose:
+        if options.verbose:
             print('Starting', i, 'of', options.nbr_readings)
         if (i > 0) and keep_going(cutoff):
             if options.verbose:
@@ -59,7 +59,7 @@ def monitor_tilt(options):
         found = False
         while keep_going(cutoff) and (not found):
             beacons = distinct(blescan.parse_events(sock, 10))
-            if verbose:
+            if options.verbose:
                 print('Found', len(beacons), 'beacons')
             for beacon in beacons:
                 if beacon['uuid'] in TILTS.keys():
