@@ -50,11 +50,17 @@ def monitor_tilt(options):
         cutoff = 0
         
     for i in range(0, options.nbr_readings):
+        if verbose:
+            print('Starting', i, 'of', options.nbr_readings)
         if (i > 0) and keep_going(cutoff):
+            if options.verbose:
+                print('Waiting', options.wait, '...')
             time.sleep(options.wait)
         found = False
         while keep_going(cutoff) and (not found):
             beacons = distinct(blescan.parse_events(sock, 10))
+            if verbose:
+                print('Found', len(beacons), 'beacons')
             for beacon in beacons:
                 if beacon['uuid'] in TILTS.keys():
                     found = True
@@ -75,6 +81,9 @@ def record_data(options, color, epoch, timestamp, gravity, celsius, fahrenheit):
             writer.writerow([color, epoch, timestamp, gravity, celsius, fahrenheit])
     else:
         print(color, epoch, timestamp, gravity, celsius, fahrenheit)
+    # verbose
+    if options.verbose:
+        print('Got', color, epoch, timestamp, gravity, celsius, fahrenheit)
     return
 
 
@@ -91,6 +100,11 @@ if __name__ == '__main__':
                          default=None,
                          metavar='FILE',
                          help='output file')
+
+    oparser.add_argument("-v", dest="verbose",
+                         default=False,
+                         action='store_true',
+                         help='verbose for debugging')
 
     oparser.add_argument("-w", dest="wait", 
                          metavar="N", type=float,
