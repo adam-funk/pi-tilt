@@ -5,21 +5,23 @@ import datetime
 import time
 import argparse
 import csv
+import statistics
+
+from collections import defaultdict
 
 import bluetooth._bluetooth as bluez
-
 import blescan as blescan
 
 
 TILTS = {
-        'a495bb10c5b14b44b5121370f02d74de': 'Red',
-        'a495bb20c5b14b44b5121370f02d74de': 'Green',
-        'a495bb30c5b14b44b5121370f02d74de': 'Black',
-        'a495bb40c5b14b44b5121370f02d74de': 'Purple',
-        'a495bb50c5b14b44b5121370f02d74de': 'Orange',
-        'a495bb60c5b14b44b5121370f02d74de': 'Blue',
-        'a495bb70c5b14b44b5121370f02d74de': 'Yellow',
-        'a495bb80c5b14b44b5121370f02d74de': 'Pink',
+        'a495bb10c5b14b44b5121370f02d74de': 'red',
+        'a495bb20c5b14b44b5121370f02d74de': 'green',
+        'a495bb30c5b14b44b5121370f02d74de': 'black',
+        'a495bb40c5b14b44b5121370f02d74de': 'purple',
+        'a495bb50c5b14b44b5121370f02d74de': 'orange',
+        'a495bb60c5b14b44b5121370f02d74de': 'blue',
+        'a495bb70c5b14b44b5121370f02d74de': 'yellow',
+        'a495bb80c5b14b44b5121370f02d74de': 'pink',
 }
 
 
@@ -34,7 +36,7 @@ def distinct(objects):
 
 
 def to_celsius(fahrenheit):
-    return round((fahrenheit - 32.0) / 1.8, 2)
+    return round((fahrenheit - 32.0) / 1.8, 1)
 
 
 def keep_going(cutoff):
@@ -44,6 +46,10 @@ def keep_going(cutoff):
 
 
 def monitor_tilt(options):
+    epoch_times = defaultdict(list)
+    gravities = defaultdict(list)
+    fahrenheits = defaultdict(list)
+    
     if options.give_up:
         cutoff  = time.time() + 60 * options.give_up
     else:
@@ -65,25 +71,33 @@ def monitor_tilt(options):
                 if beacon['uuid'] in TILTS.keys():
                     found = True
                     color = TILTS[beacon['uuid']]
-                    epoch = round(time.time())
-                    timestamp = datetime.datetime.now().isoformat(timespec='seconds')
-                    gravity = beacon['minor']
-                    fahrenheit = beacon['major']
-                    celsius = to_celsius(fahrenheit)
-                    record_data(options, color, epoch, timestamp, gravity, celsius, fahrenheit)
+                    epoch_times[color].append(round(time.time()))
+                    gravities[color].append(beacon['minor'])
+                    fahrenheits[color].append(beacon['major'])
+                    if options.verbose:
+                        print(color, *epoch_times)
+                        print(*gravities)
+                        print(*fahrenheits)
+    for color, epochs in epoch_times.items():
+        epoch = round(statistics.mean(epochs))
+        timestamp = datetime.datetime.now().isoformat(timespec='seconds')
+        gravity = round(statistics.median(gravities[color]), 1)
+        fahrenheit = round(statistics.medin(fahrenheits[color]), 1)
+        celsius = to_celsius(fahrenheit)
+        readings = len(epochs)
+        record_data(options, color, epoch, timestamp, gravity, celsius, fahrenheit, readings)
     return
 
 
-def record_data(options, color, epoch, timestamp, gravity, celsius, fahrenheit):
+def record_data(options, data):
     if options.output_file:
         with open(options.output_file, 'a') as f:
             writer = csv.writer(f, lineterminator='\n')
-            writer.writerow([color, epoch, timestamp, gravity, celsius, fahrenheit])
+            writer.writerow(data)
+        if options.verbose:
+            print('Got', *data)
     else:
-        print(color, epoch, timestamp, gravity, celsius, fahrenheit)
-    # verbose
-    if options.verbose:
-        print('Got', color, epoch, timestamp, gravity, celsius, fahrenheit)
+        print(*data)
     return
 
 
