@@ -57,7 +57,7 @@ def monitor_tilt(options):
         
     for i in range(0, options.nbr_readings):
         if options.verbose:
-            print('Starting', i, 'of', options.nbr_readings)
+            print('Reading', i+1, 'of', options.nbr_readings)
         if (i > 0) and keep_going(cutoff):
             if options.verbose:
                 print('Waiting', options.wait, '...')
