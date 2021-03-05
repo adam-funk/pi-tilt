@@ -85,7 +85,7 @@ def monitor_tilt(options):
         fahrenheit = round(statistics.median(fahrenheits[color]), 1)
         celsius = to_celsius(fahrenheit)
         readings = len(epochs)
-        record_data(options, color, epoch, timestamp, gravity, celsius, fahrenheit, readings)
+        record_data(options, [color, epoch, timestamp, gravity, celsius, fahrenheit, readings])
     return
 
 
