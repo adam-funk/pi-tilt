@@ -75,14 +75,14 @@ def monitor_tilt(options):
                     gravities[color].append(beacon['minor'])
                     fahrenheits[color].append(beacon['major'])
                     if options.verbose:
-                        print(color, *epoch_times)
-                        print(*gravities)
-                        print(*fahrenheits)
+                        print(color, *epoch_times[color])
+                        print(*gravities[color])
+                        print(*fahrenheits[color])
     for color, epochs in epoch_times.items():
         epoch = round(statistics.mean(epochs))
         timestamp = datetime.datetime.now().isoformat(timespec='seconds')
         gravity = round(statistics.median(gravities[color]), 1)
-        fahrenheit = round(statistics.medin(fahrenheits[color]), 1)
+        fahrenheit = round(statistics.median(fahrenheits[color]), 1)
         celsius = to_celsius(fahrenheit)
         readings = len(epochs)
         record_data(options, color, epoch, timestamp, gravity, celsius, fahrenheit, readings)
