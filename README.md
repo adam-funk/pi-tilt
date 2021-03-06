@@ -25,6 +25,8 @@ From the directory containing pytilt.py run `python pytilt.py`
 
 ## TODO
 
+Handle empty list of readings (store NaN or similar).
+
 Server stuff...
 Running Pytilt in the background and on System Start
 
