@@ -79,13 +79,18 @@ def monitor_tilt(options):
                         print(*gravities[color])
                         print(*fahrenheits[color])
     for color, epochs in epoch_times.items():
-        epoch = round(statistics.mean(epochs))
-        timestamp = datetime.datetime.now().isoformat(timespec='seconds')
-        gravity = round(statistics.median(gravities[color]), 1)
-        fahrenheit = round(statistics.median(fahrenheits[color]), 1)
-        celsius = to_celsius(fahrenheit)
         readings = len(epochs)
-        record_data(options, [color, epoch, timestamp, gravity, celsius, fahrenheit, readings])
+        if readings:
+            epoch = round(statistics.mean(epochs))
+            timestamp = datetime.datetime.now().isoformat(timespec='seconds')
+            gravity = round(statistics.median(gravities[color]), 1)
+            fahrenheit = round(statistics.median(fahrenheits[color]), 1)
+            celsius = to_celsius(fahrenheit)
+            record_data(options, [color, epoch, timestamp, gravity, celsius, fahrenheit, readings])
+        else:
+            # empty list of readings
+            # empty string column will produce NaN in pandas
+            record_data(options, [color, epoch, timestamp, '', '', '', readings])
     return
 
 
