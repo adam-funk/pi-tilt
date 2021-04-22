@@ -5,8 +5,9 @@ Tools for reading your Tilt brewing hydrometer on a Raspberry Pi and storing the
 ## Dependencies
 
 * ```sudo apt-get install python-bluez```
-* Make the bluetooth interface accessible witout being root: ```sudo setcap cap_net_raw+eip /usr/bin/python3.7```
-  * Note: that command does not follow symlinks
+* Make the bluetooth interface accessible witout being root: 
+  * ```sudo setcap cap_net_raw+eip /usr/bin/python3.7```
+  * Note: that command does not follow symlinks so applying it to ```/usr/bin/python3``` won't work
 
 ## Running
 
@@ -25,24 +26,5 @@ From the directory containing pytilt.py run `python pytilt.py`
 
 ## TODO
 
-Handle empty list of readings (store NaN or similar).
-
-Server stuff...
-Running Pytilt in the background and on System Start
-
-0. edit pytilt.service, add your key and fix paths
-
-1. copy pytilt.service to /lib/systemd/system/
-
-2. sudo chmod 644 /lib/systemd/system/pytilt.service
-
-3. sudo systemctl daemon-reload
-
-4. sudo systemctl enable pytilt.service
-
-5. sudo reboot
-
-
-
-
+Add script to generate the plots and mail them.
 
