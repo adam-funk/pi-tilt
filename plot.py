@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import matplotlib
+matplotlib.use('Agg')
 import argparse
 import imghdr
 import os
@@ -10,12 +12,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import dates
-import matplotlib
 from subprocess import Popen, PIPE
 
-matplotlib.use('Agg')
 FIGSIZE = (15, 6)
 
+# https://stackoverflow.com/questions/4931376/generating-matplotlib-graphs-without-a-running-x-server
 # https://matplotlib.org/gallery/text_labels_and_annotations/date.html
 # https://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots
 # https://matplotlib.org/api/dates_api.html#matplotlib.dates.MonthLocator
