@@ -6,9 +6,9 @@ Tools for reading your Tilt brewing hydrometer on a Raspberry Pi and storing the
 
 * ```sudo apt-get install python-bluez```
 * Make the bluetooth interface accessible witout being root: 
-  * ```sudo setcap cap_net_raw+eip /usr/bin/python3.7```
-  * Note: that command does not follow symlinks so applying it to ```/usr/bin/python3``` won't work
-
+  * ```sudo setcap cap_net_raw+eip /usr/bin/python3.7``` (for example)
+  * Note: this command does not follow symlinks so applying it to ```/usr/bin/python3``` won't work
+  * You need to run this command whenever apt updates that library
 ## Running
 
 From the directory containing pytilt.py run `python pytilt.py`
@@ -18,13 +18,9 @@ From the directory containing pytilt.py run `python pytilt.py`
 * Forked from https://github.com/atlefren/pytilt and updated to Python 3
 * The code in blescan-py is adapted from https://github.com/switchdoclabs/iBeacon-Scanner-
 * The Tilt UUID-to-color mapping is taken from: https://github.com/tbryant/brewometer-nodejs
-* Systemd-config here: http://www.raspberrypi-spy.co.uk/2015/10/how-to-autorun-a-python-script-on-boot-using-systemd/
 * https://kvurd.com/blog/tilt-hydrometer-ibeacon-data-format/
 * https://tilthydrometer.com/
 
-
-
 ## TODO
 
-Add script to generate the plots and mail them.
-
+* Use a JSON config file for storing and mailing data.
