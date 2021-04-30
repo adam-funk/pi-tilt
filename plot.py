@@ -10,15 +10,17 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import dates
+import matplotlib
+from subprocess import Popen, PIPE
+
+matplotlib.use('Agg')
+FIGSIZE = (15, 6)
 
 # https://matplotlib.org/gallery/text_labels_and_annotations/date.html
 # https://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots
 # https://matplotlib.org/api/dates_api.html#matplotlib.dates.MonthLocator
 # https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot
 # https://matplotlib.org/tutorials/introductory/pyplot.html
-
-FIGSIZE = (15, 6)
-
 
 def meanr(x):
     # ignore NaN (blank fields in the CSV
@@ -52,12 +54,7 @@ def make_plots(options, data, data_by_date):
 
     days_locator = dates.DayLocator(interval=1)
     days_format = dates.DateFormatter('%d')
-
-    # https://stackoverflow.com/questions/15713279/calling-pylab-savefig-without-display-in-ipython
-    if options.visual:
-        plt.ion()
-    else:
-        plt.ioff()
+    plt.ioff()
 
     fig0, ax0 = plt.subplots(figsize=FIGSIZE)
     ax0.xaxis.set_major_locator(days_locator)
@@ -94,6 +91,17 @@ def make_plots(options, data, data_by_date):
     return f0, f1, f2, f3
 
 
+def send_mail(message, options):
+    # https://stackoverflow.com/questions/73781/sending-mail-via-sendmail-from-python
+    if options.mail_command:
+        p = Popen(["/usr/sbin/sendmail", "-t", "-oi"], stdin=PIPE)
+        p.communicate(message.as_bytes())
+    else:
+        with smtplib.SMTP('localhost') as s:
+            s.send_message(mail)
+    return
+
+
 oparser = argparse.ArgumentParser(description="Plotter for temperature and humidity log",
                                   formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -102,26 +110,22 @@ oparser.add_argument("-d", dest="data_file",
                      metavar="CSV",
                      help="CSV input file")
 
-oparser.add_argument("-v", dest="visual",
-                     default=False,
-                     action='store_true',
-                     help="show plots")
-
 oparser.add_argument("-m", dest="mail",
                      action='append',
                      metavar='USER@EXAMPLE.COM',
                      help="send mail to this address")
 
+oparser.add_argument("-M", dest='mail_command',
+                     action='store_true',
+                     default=False,
+                     help="use mail command instead of localhost SMTP")
+
 oparser.add_argument("-f", dest="from_mail",
-                     default='from@exmaple.com',
+                     default='from@example.com',
                      metavar='USER@EXAMPLE.COM',
                      help="send mail from this address")
 
 options = oparser.parse_args()
-
-if not options.visual:
-    import matplotlib
-    matplotlib.use('Agg')
 
 data, data_by_date = get_data(options)
 plot_files = make_plots(options, data, data_by_date)
@@ -144,6 +148,5 @@ if options.mail:
         mail.add_attachment(img_data, maintype='image',
                             disposition='inline',
                             subtype=imghdr.what(None, img_data))
+    send_mail(mail, options)
 
-    with smtplib.SMTP('localhost') as s:
-        s.send_message(mail)
