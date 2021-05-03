@@ -24,3 +24,4 @@ From the directory containing pytilt.py run `python pytilt.py`
 ## TODO
 
 * Use a JSON config file for storing and mailing data.
+* Distinguish different Tilt colors.
