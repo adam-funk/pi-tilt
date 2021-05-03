@@ -1,16 +1,16 @@
 {
-  'hydrometers': {
-    'purple': 'hydrometer.csv'
+  "hydrometers": {
+    "purple": "hydrometer.csv"
   },
-  'readings': {
-    'number': 3,
-    'wait_seconds': 60,
-    'give_up_minutes': 8
+  "readings": {
+    "number": 3,
+    "wait_seconds": 60,
+    "give_up_minutes": 8
   },
-  'mail_from': 'from@example.com',
-  'mail_to': [
-    'alice@example.com',
-    'bob@example.com'
+  "mail_from": "from@example.com",
+  "mail_to": [
+    "alice@example.com",
+    "bob@example.com"
   ],
-  'sendmail': True
+  "sendmail": true
 }

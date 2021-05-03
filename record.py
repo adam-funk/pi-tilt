@@ -5,6 +5,8 @@ import datetime
 import time
 import argparse
 import csv
+import os
+import json
 import statistics
 
 from collections import defaultdict
@@ -45,7 +47,7 @@ def keep_going(cutoff):
     return time.time() < cutoff
 
 
-def monitor_tilt(options):
+def monitor_tilt(config, base_dir, options):
     epoch_times = defaultdict(list)
     gravities = defaultdict(list)
     fahrenheits = defaultdict(list)
@@ -107,47 +109,36 @@ def record_data(options, data):
 
 
 if __name__ == '__main__':
-    oparser = argparse.ArgumentParser(description="record Tilt data",
+    oparser = argparse.ArgumentParser(description="record Tilt hydrometer data",
                                       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    oparser.add_argument("-n", dest="nbr_readings", 
-                         metavar="N", type=int,
-                         default=1,
-                         help='number of readings ')
-
-    oparser.add_argument("-o", dest="output_file",
-                         default=None,
-                         metavar='FILE',
-                         help='output file')
+    oparser.add_argument("-c", dest="config_file",
+                         required=True,
+                         metavar="JSON",
+                         help="JSON config file")
 
     oparser.add_argument("-v", dest="verbose",
                          default=False,
                          action='store_true',
                          help='verbose for debugging')
 
-    oparser.add_argument("-w", dest="wait", 
-                         metavar="N", type=float,
-                         default=10.0,
-                         help='wait N seconds between readings')
-    
-    oparser.add_argument("-x", dest="give_up", 
-                         metavar="N", type=float,
-                         default=10.0,
-                         help='give up after N minutes')
-    
     options = oparser.parse_args()
+
+    base_dir = os.path.dirname(options.config_file)
+
+    with open(options.config_file, 'r') as f:
+        config = json.load(f)
 
     dev_id = 0
     try:
         sock = bluez.hci_open_dev(dev_id)
-        #print('Starting pytilt logger')
     except:
         print('error accessing bluetooth device...')
         sys.exit(1)
 
     blescan.hci_le_set_scan_parameters(sock)
     blescan.hci_enable_le_scan(sock)
-    monitor_tilt(options)
+    monitor_tilt(config, base_dir, options)
 
 
     

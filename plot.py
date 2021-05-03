@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import dates
 from subprocess import Popen, PIPE
+import json
 
 FIGSIZE = (15, 6)
 
@@ -22,6 +23,7 @@ FIGSIZE = (15, 6)
 # https://matplotlib.org/api/dates_api.html#matplotlib.dates.MonthLocator
 # https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot
 # https://matplotlib.org/tutorials/introductory/pyplot.html
+
 
 def meanr(x):
     # ignore NaN (blank fields in the CSV
@@ -33,8 +35,8 @@ def medianr(x):
     return round(np.nanmedian(x), 1)
 
 
-def get_data(options):
-    data = pd.read_csv(options.data_file, names=['color', 'epoch', 'iso', 'sg', 'c', 'f', 'n'],
+def get_data(csv_file, config):
+    data = pd.read_csv(csv_file, names=['color', 'epoch', 'iso', 'sg', 'c', 'f', 'n'],
                        index_col='epoch')
     data['time'] = pd.to_datetime(data['iso'])
     data['date'] = data['time'].dt.date
@@ -45,8 +47,8 @@ def get_data(options):
     return data, date_data
 
 
-def make_plots(options, data, data_by_date):
-    output_dir = '/tmp/hydrometer-plots-%i' % int(time.time())
+def make_plots(config, data, data_by_date, color):
+    output_dir = '/tmp/hydrometer-plots-%i-%s' % (int(time.time()), color)
     os.mkdir(output_dir)
     f0 = os.path.join(output_dir, 'density.png')
     f1 = os.path.join(output_dir, 'temperature.png')
@@ -103,45 +105,38 @@ def send_mail(message, options):
     return
 
 
-oparser = argparse.ArgumentParser(description="Plotter for temperature and humidity log",
+oparser = argparse.ArgumentParser(description="Mail summary and plots of Tilt hydrometer data",
                                   formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-oparser.add_argument("-d", dest="data_file",
+oparser.add_argument("-c", dest="config_file",
                      required=True,
-                     metavar="CSV",
-                     help="CSV input file")
-
-oparser.add_argument("-m", dest="mail",
-                     action='append',
-                     metavar='USER@EXAMPLE.COM',
-                     help="send mail to this address")
-
-oparser.add_argument("-M", dest='mail_command',
-                     action='store_true',
-                     default=False,
-                     help="use mail command instead of localhost SMTP")
-
-oparser.add_argument("-f", dest="from_mail",
-                     default='from@example.com',
-                     metavar='USER@EXAMPLE.COM',
-                     help="send mail from this address")
+                     metavar="JSON",
+                     help="JSON config file")
 
 options = oparser.parse_args()
 
-data, data_by_date = get_data(options)
-plot_files = make_plots(options, data, data_by_date)
+base_dir = os.path.dirname(options.config_file)
 
-if options.mail:
+with open(options.config_file, 'r') as f:
+    config = json.load(f)
+
+
+for color, csv_file in config['hydrometers']:
+    csv_path = os.path.join(base_dir, csv_file)
+    data, data_by_date = get_data(csv_path, config)
+    plot_files = make_plots(config, data, data_by_date, color)
+
     mail = EmailMessage()
     mail.set_charset('utf-8')
-    mail['To'] = ', '.join(options.mail)
-    mail['From'] = options.from_mail
-    mail['Subject'] = 'hydrometer'
+    mail_tos = config.get('mail_to', ['to@example.com'])
+    mail['To'] = ', '.join(mail_tos)
+    mail['From'] = config.get('mail_from', 'from@example.com')
+    mail['Subject'] = 'hydrometer %s' % color
 
     mail.add_attachment(str(data_by_date).encode('utf-8'),
                         disposition='inline',
                         maintype='text', subtype='plain')
-    
+
     # https://docs.python.org/3/library/email.examples.html
     for file in plot_files:
         with open(file, 'rb') as fp:
