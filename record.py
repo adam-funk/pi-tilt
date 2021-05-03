@@ -51,19 +51,29 @@ def monitor_tilt(config, base_dir, options):
     epoch_times = defaultdict(list)
     gravities = defaultdict(list)
     fahrenheits = defaultdict(list)
-    
-    if options.give_up:
-        cutoff  = time.time() + 60 * options.give_up
-    else:
+
+    try:
+        cutoff  = time.time() + 60 * config['readings']['give_up_minutes']
+    except KeyError:
         cutoff = 0
+
+    try:
+        nbr_readings = options['readings']['number']
+    except KeyError:
+        nbr_readings = 1
+
+    try:
+        wait_seconds = options['readings']['wait_seconds']
+    except KeyError:
+        wait_seconds = 1
         
-    for i in range(0, options.nbr_readings):
+    for i in range(nbr_readings):
         if options.verbose:
             print('Reading', i+1, 'of', options.nbr_readings)
         if (i > 0) and keep_going(cutoff):
             if options.verbose:
-                print('Waiting', options.wait, '...')
-            time.sleep(options.wait)
+                print('Waiting', wait_seconds, '...')
+            time.sleep(wait_seconds)
         found = False
         while keep_going(cutoff) and (not found):
             beacons = distinct(blescan.parse_events(sock, 10))
@@ -92,19 +102,21 @@ def monitor_tilt(config, base_dir, options):
         else:
             # empty list of readings
             # empty string column will produce NaN in pandas
-            record_data(options, [color, epoch, timestamp, '', '', '', readings])
+            record_data(config, base_dir, options, color, [color, epoch, timestamp, '', '', '', readings])
     return
 
 
-def record_data(options, data):
-    if options.output_file:
-        with open(options.output_file, 'a') as f:
+def record_data(config, base_dir, options, color, data):
+    output_file = config.get('hydrometers', []).get(color, None)
+    if output_file:
+        output_path = os.path.join(base_dir, output_file)
+        with open(output_path, 'a') as f:
             writer = csv.writer(f, lineterminator='\n')
             writer.writerow(data)
         if options.verbose:
             print('Got', *data)
     else:
-        print(*data)
+        print('Output', *data)
     return
 
 
