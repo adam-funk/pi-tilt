@@ -55,6 +55,8 @@ def make_plots(config, data, data_by_date, color):
     f2 = os.path.join(output_dir, 'density_date.png')
     f3 = os.path.join(output_dir, 'temperature_date.png')
 
+    date_html = data_by_date.to_html()
+
     days_locator = dates.DayLocator(interval=1)
     days_format = dates.DateFormatter('%d')
     plt.ioff()
@@ -91,7 +93,7 @@ def make_plots(config, data, data_by_date, color):
     ax3.plot(data_by_date.index, data_by_date['c'])
     plt.savefig(f3, dpi=200)
 
-    return f0, f1, f2, f3
+    return date_html, (f0, f1, f2, f3)
 
 
 def send_mail(message, options):
@@ -124,7 +126,7 @@ with open(options.config_file, 'r') as f:
 for color, csv_file in config['hydrometers']:
     csv_path = os.path.join(base_dir, csv_file)
     data, data_by_date = get_data(csv_path, config)
-    plot_files = make_plots(config, data, data_by_date, color)
+    html, plot_files = make_plots(config, data, data_by_date, color)
 
     mail = EmailMessage()
     mail.set_charset('utf-8')
@@ -133,16 +135,17 @@ for color, csv_file in config['hydrometers']:
     mail['From'] = config.get('mail_from', 'from@example.com')
     mail['Subject'] = 'hydrometer %s' % color
 
-    mail.add_attachment(str(data_by_date).encode('utf-8'),
-                        disposition='inline',
-                        maintype='text', subtype='plain')
+    # https://stackoverflow.com/questions/56711321/addng-attachment-to-an-emailmessage-raises-typeerror-set-text-content-got-an
+    # accepts a maintype argument if the content is bytes, but not if the content is str
+    mail.add_attachment(html.encode('utf-8'), disposition='inline',
+                        maintype='text', subtype='html')
 
     # https://docs.python.org/3/library/email.examples.html
     for file in plot_files:
         with open(file, 'rb') as fp:
             img_data = fp.read()
-        mail.add_attachment(img_data, maintype='image',
-                            disposition='inline',
+        mail.add_attachment(img_data, disposition='inline',
+                            maintype='image',
                             subtype=imghdr.what(None, img_data))
     send_mail(mail, options)
 

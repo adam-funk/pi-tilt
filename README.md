@@ -5,14 +5,16 @@ Tools for reading your Tilt brewing hydrometer on a Raspberry Pi and storing the
 ## Dependencies
 
 * ```sudo apt-get install python3-bluez```
-  * or is it ```PyBluez```?
+  * or```pip3 install PyBluez```
+  * also matplotlib, numpy, pandas
 * Make the bluetooth interface accessible without being root: 
   * ```sudo setcap cap_net_raw+eip /usr/bin/python3.7``` (for example)
   * Note: this command does not follow symlinks so applying it to ```/usr/bin/python3``` won't work
   * You need to run this command whenever apt updates that library
+
 ## Running
 
-From the directory containing pytilt.py run `python pytilt.py`
+* `./pytilt.py ...`
 
 ## Acknowledgements and notes
 
