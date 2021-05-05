@@ -53,6 +53,8 @@ def make_plots(options, data, data_by_date):
     f2 = os.path.join(output_dir, 'density_date.png')
     f3 = os.path.join(output_dir, 'temperature_date.png')
 
+    date_html = data_by_date.to_html()
+
     days_locator = dates.DayLocator(interval=1)
     days_format = dates.DateFormatter('%d')
     plt.ioff()
@@ -89,7 +91,7 @@ def make_plots(options, data, data_by_date):
     ax3.plot(data_by_date.index, data_by_date['c'])
     plt.savefig(f3, dpi=200)
 
-    return f0, f1, f2, f3
+    return date_html, (f0, f1, f2, f3)
 
 
 def send_mail(message, options):
@@ -129,7 +131,7 @@ oparser.add_argument("-f", dest="from_mail",
 options = oparser.parse_args()
 
 data, data_by_date = get_data(options)
-plot_files = make_plots(options, data, data_by_date)
+html, plot_files = make_plots(options, data, data_by_date)
 
 if options.mail:
     mail = EmailMessage()
@@ -138,16 +140,17 @@ if options.mail:
     mail['From'] = options.from_mail
     mail['Subject'] = 'hydrometer'
 
-    mail.add_attachment(str(data_by_date).encode('utf-8'),
-                        disposition='inline',
-                        maintype='text', subtype='plain')
-    
+    # https://stackoverflow.com/questions/56711321/addng-attachment-to-an-emailmessage-raises-typeerror-set-text-content-got-an
+    # accepts a maintype argument if the content is bytes, but not if the content is str
+    mail.add_attachment(html.encode('utf-8'), disposition='inline',
+                        maintype='text', subtype='html')
+
     # https://docs.python.org/3/library/email.examples.html
     for file in plot_files:
         with open(file, 'rb') as fp:
             img_data = fp.read()
-        mail.add_attachment(img_data, maintype='image',
-                            disposition='inline',
+        mail.add_attachment(img_data, disposition='inline',
+                            maintype='image',
                             subtype=imghdr.what(None, img_data))
     send_mail(mail, options)
 
