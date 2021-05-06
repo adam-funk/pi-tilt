@@ -97,9 +97,10 @@ def make_plots(config, data, data_by_date, color):
     return date_html, (f0, f1, f2, f3)
 
 
-def send_mail(message, options):
+def send_mail(message, options, config):
     # https://stackoverflow.com/questions/73781/sending-mail-via-sendmail-from-python
-    if options.mail_command:
+    # TODO change to 'smtp' and flip default
+    if config['sendmail']:
         p = Popen(["/usr/sbin/sendmail", "-t", "-oi"], stdin=PIPE)
         p.communicate(message.as_bytes())
     else:
@@ -124,7 +125,7 @@ with open(options.config_file, 'r') as f:
     config = json.load(f)
 
 
-for color, csv_file in config['hydrometers']:
+for color, csv_file in config['hydrometers'].items():
     csv_path = os.path.join(base_dir, csv_file)
     data, data_by_date = get_data(csv_path, config)
     html, plot_files = make_plots(config, data, data_by_date, color)
@@ -148,5 +149,5 @@ for color, csv_file in config['hydrometers']:
         mail.add_attachment(img_data, disposition='inline',
                             maintype='image',
                             subtype=imghdr.what(None, img_data))
-    send_mail(mail, options)
+    send_mail(mail, options, config)
 
