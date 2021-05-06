@@ -58,12 +58,12 @@ def monitor_tilt(config, base_dir, options):
         cutoff = 0
 
     try:
-        nbr_readings = options['readings']['number']
+        nbr_readings = config['readings']['number']
     except KeyError:
         nbr_readings = 1
 
     try:
-        wait_seconds = options['readings']['wait_seconds']
+        wait_seconds = config['readings']['wait_seconds']
     except KeyError:
         wait_seconds = 1
         
