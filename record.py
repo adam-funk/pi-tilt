@@ -69,7 +69,7 @@ def monitor_tilt(config, base_dir, options):
         
     for i in range(nbr_readings):
         if options.verbose:
-            print('Reading', i+1, 'of', options.nbr_readings)
+            print('Reading', i+1, 'of', nbr_readings)
         if (i > 0) and keep_going(cutoff):
             if options.verbose:
                 print('Waiting', wait_seconds, '...')
