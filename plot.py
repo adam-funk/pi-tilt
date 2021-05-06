@@ -159,5 +159,9 @@ for color, csv_file in config['hydrometers'].items():
         mail.add_attachment(img_data, disposition='inline',
                             maintype='image',
                             subtype=imghdr.what(None, img_data))
+    if options.verbose:
+        print('Mail headers:')
+        for k, v in mail.items():
+            print(k, v)
     send_mail(mail, options, config)
 
