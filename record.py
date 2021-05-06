@@ -98,10 +98,9 @@ def monitor_tilt(config, base_dir, options):
             gravity = round(statistics.median(gravities[color]), 1)
             fahrenheit = round(statistics.median(fahrenheits[color]), 1)
             celsius = to_celsius(fahrenheit)
-            record_data(options, [color, epoch, timestamp, gravity, celsius, fahrenheit, readings])
+            record_data(config, base_dir, options, color, [color, epoch, timestamp, gravity, celsius, fahrenheit, readings])
         else:
-            # empty list of readings
-            # empty string column will produce NaN in pandas
+            # Each empty string column will produce NaN in pandas
             record_data(config, base_dir, options, color, [color, epoch, timestamp, '', '', '', readings])
     return
 
@@ -110,6 +109,8 @@ def record_data(config, base_dir, options, color, data):
     output_file = config.get('hydrometers', []).get(color, None)
     if output_file:
         output_path = os.path.join(base_dir, output_file)
+        if options.verbose:
+            print(f'Output: {output_path}')
         with open(output_path, 'a') as f:
             writer = csv.writer(f, lineterminator='\n')
             writer.writerow(data)
@@ -137,6 +138,9 @@ if __name__ == '__main__':
     options = oparser.parse_args()
 
     base_dir = os.path.dirname(options.config_file)
+    if options.verbose:
+        print(f'Config:  {options.config_file}')
+        print(f'Basedir: {base_dir}')
 
     with open(options.config_file, 'r') as f:
         config = json.load(f)
