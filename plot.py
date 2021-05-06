@@ -42,8 +42,9 @@ def get_data(csv_file, config):
     data['date'] = data['time'].dt.date
     data['c'] = round(data['c'], 1)
     # aggregated by date
-    date_data = data.groupby('date').agg({'sg': ['min', meanr, medianr, 'max'],
-                                          'c': ['min', meanr, medianr, 'max']})
+    columns = [min, meanr, medianr, max]
+    date_data = data.groupby('date').agg({'sg': columns,
+                                          'c': columns}).rename(columns={'meanr': 'mean', 'medianr': 'mdn'})
     return data, date_data
 
 
