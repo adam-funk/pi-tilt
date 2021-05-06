@@ -99,13 +99,12 @@ def make_plots(config, data, data_by_date, color):
 
 def send_mail(message, options, config):
     # https://stackoverflow.com/questions/73781/sending-mail-via-sendmail-from-python
-    # TODO change to 'smtp' and flip default
-    if config['sendmail']:
-        p = Popen(["/usr/sbin/sendmail", "-t", "-oi"], stdin=PIPE)
-        p.communicate(message.as_bytes())
-    else:
+    if config.get('smtp', False):
         with smtplib.SMTP('localhost') as s:
             s.send_message(mail)
+    else:
+        p = Popen(["/usr/sbin/sendmail", "-t", "-oi"], stdin=PIPE)
+        p.communicate(message.as_bytes())
     return
 
 
@@ -117,9 +116,18 @@ oparser.add_argument("-c", dest="config_file",
                      metavar="JSON",
                      help="JSON config file")
 
+oparser.add_argument('-v', dest='verbose',
+                     default=False,
+                     action='store_true',
+                     help='verbose for debugging')
+
 options = oparser.parse_args()
 
-base_dir = os.path.dirname(options.config_file)
+base_dir = os.path.abspath(os.path.dirname(options.config_file))
+
+if options.verbose:
+    print(f'Config:  {options.config_file}')
+    print(f'Basedir: {base_dir}')
 
 with open(options.config_file, 'r') as f:
     config = json.load(f)
@@ -127,6 +135,8 @@ with open(options.config_file, 'r') as f:
 
 for color, csv_file in config['hydrometers'].items():
     csv_path = os.path.join(base_dir, csv_file)
+    if options.verbose:
+        print(f'Loading CSV: {csv_path} for {color}')
     data, data_by_date = get_data(csv_path, config)
     html, plot_files = make_plots(config, data, data_by_date, color)
 

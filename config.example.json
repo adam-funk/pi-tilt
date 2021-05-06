@@ -1,6 +1,6 @@
 {
   "hydrometers": {
-    "purple": "hydrometer.csv"
+    "purple": "purple.csv"
   },
   "readings": {
     "number": 3,
@@ -12,5 +12,5 @@
     "alice@example.com",
     "bob@example.com"
   ],
-  "sendmail": true
+  "smtp": false
 }
