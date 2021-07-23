@@ -7,6 +7,7 @@ import imghdr
 import os
 import smtplib
 import time
+import datetime
 from email.message import EmailMessage
 import pandas as pd
 import numpy as np
@@ -139,7 +140,7 @@ if options.mail:
     mail.set_charset('utf-8')
     mail['To'] = ', '.join(options.mail)
     mail['From'] = options.from_mail
-    mail['Subject'] = 'hydrometer'
+    mail['Subject'] = 'Hydrometer %s' % datetime.datetime.now().strftime('%a %H:%M')
 
     # https://stackoverflow.com/questions/56711321/addng-attachment-to-an-emailmessage-raises-typeerror-set-text-content-got-an
     # accepts a maintype argument if the content is bytes, but not if the content is str
