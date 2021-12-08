@@ -1,6 +1,7 @@
 # Pytilt
 
 Tools for reading your Tilt brewing hydrometer on a Raspberry Pi and storing the results as CSV.
+Intended for use as two cron jobs (recording data and mailing plots).
 
 ## Dependencies
 
@@ -12,9 +13,17 @@ Tools for reading your Tilt brewing hydrometer on a Raspberry Pi and storing the
   * Note: this command does not follow symlinks so applying it to ```/usr/bin/python3``` won't work
   * You need to run this command whenever apt updates that library
 
-## Running
+## crontab examples
 
-* `./pytilt.py ...`
+* The same config file is used for both.
+```
+15 *     * * *  path/to/pi-tilt/record.py -c path/to/config.json 
+00 09,21 * * *  path/to/pi-tilt/plot.py -c path/to/config.json
+```
+
+## config file
+
+...
 
 ## Acknowledgements and notes
 
@@ -24,7 +33,3 @@ Tools for reading your Tilt brewing hydrometer on a Raspberry Pi and storing the
 * https://kvurd.com/blog/tilt-hydrometer-ibeacon-data-format/
 * https://tilthydrometer.com/
 
-## TODO
-
-* Use a JSON config file for storing and mailing data.
-* Distinguish different Tilt colors.
