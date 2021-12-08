@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
+import datetime
 
 import matplotlib
 matplotlib.use('Agg')
 import argparse
 import imghdr
 import os
-import smtplib
 import time
 from email.message import EmailMessage
 import pandas as pd
@@ -35,8 +35,8 @@ def medianr(x):
     return round(np.nanmedian(x), 1)
 
 
-def get_data(csv_file, config):
-    data = pd.read_csv(csv_file, names=['color', 'epoch', 'iso', 'sg', 'c', 'f', 'n'],
+def get_data(input_file):
+    data = pd.read_csv(input_file, names=['color', 'epoch', 'iso', 'sg', 'c', 'f', 'n'],
                        index_col='epoch')
     data['time'] = pd.to_datetime(data['iso'])
     data['date'] = data['time'].dt.date
@@ -57,6 +57,10 @@ def make_plots(config, data, data_by_date, color):
     f3 = os.path.join(output_dir, 'temperature_date.png')
 
     date_html = data_by_date.to_html()
+
+    minmax = [[data['sg'].max(), data['c'].max()], [data['sg'].min(), data['c'].min()]]
+    mm_df = pd.DataFrame(minmax, columns=['sg', 'c'], index=['max', 'min'])
+    mm_html = mm_df.to_html()
 
     days_locator = dates.DayLocator(interval=1)
     days_format = dates.DateFormatter('%d')
@@ -94,17 +98,12 @@ def make_plots(config, data, data_by_date, color):
     ax3.plot(data_by_date.index, data_by_date['c'])
     plt.savefig(f3, dpi=200)
 
-    return date_html, (f0, f1, f2, f3)
+    return date_html, mm_html, (f0, f1, f2, f3)
 
 
-def send_mail(message, options, config):
-    # https://stackoverflow.com/questions/73781/sending-mail-via-sendmail-from-python
-    if config.get('smtp', False):
-        with smtplib.SMTP('localhost') as s:
-            s.send_message(mail)
-    else:
-        p = Popen(["/usr/sbin/sendmail", "-t", "-oi"], stdin=PIPE)
-        p.communicate(message.as_bytes())
+def send_mail(message):
+    p = Popen(["/usr/sbin/sendmail", "-t", "-oi"], stdin=PIPE)
+    p.communicate(message.as_bytes())
     return
 
 
@@ -137,19 +136,23 @@ for color, csv_file in config['hydrometers'].items():
     csv_path = os.path.join(base_dir, csv_file)
     if options.verbose:
         print(f'Loading CSV: {csv_path} for {color}')
-    data, data_by_date = get_data(csv_path, config)
-    html, plot_files = make_plots(config, data, data_by_date, color)
+    data, data_by_date = get_data(csv_path)
+    html0, html1, plot_files = make_plots(config, data, data_by_date, color)
 
     mail = EmailMessage()
     mail.set_charset('utf-8')
     mail_tos = config.get('mail_to', ['to@example.com'])
     mail['To'] = ', '.join(mail_tos)
     mail['From'] = config.get('mail_from', 'from@example.com')
-    mail['Subject'] = 'Hydrometer %s %s ' % (color, datetime.datetime.now().strftime('%a %H:%M'))
+    dt = datetime.datetime.now().strftime('%a %H:%M')
+    mail['Subject'] = f'Hydrometer {color} {dt}'
 
     # https://stackoverflow.com/questions/56711321/addng-attachment-to-an-emailmessage-raises-typeerror-set-text-content-got-an
     # add_attachment accepts a maintype argument if the content is bytes, but not if the content is str
-    mail.add_attachment(html.encode('utf-8'), disposition='inline',
+    mail.add_attachment(html0.encode('utf-8'), disposition='inline',
+                        maintype='text', subtype='html')
+
+    mail.add_attachment(html1.encode('utf-8'), disposition='inline',
                         maintype='text', subtype='html')
 
     # https://docs.python.org/3/library/email.examples.html
@@ -163,5 +166,5 @@ for color, csv_file in config['hydrometers'].items():
         print('Mail headers:')
         for k, v in mail.items():
             print(k, v)
-    send_mail(mail, options, config)
+    send_mail(mail)
 

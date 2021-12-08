@@ -11,6 +11,5 @@
   "mail_to": [
     "alice@example.com",
     "bob@example.com"
-  ],
-  "smtp": false
+  ]
 }
