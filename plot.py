@@ -57,6 +57,10 @@ def make_plots(options, data, data_by_date):
 
     date_html = data_by_date.to_html()
 
+    minmax = [[data['sg'].max(), data['c'].max()], [data['sg'].min(), data['c'].min()]]
+    mm_df = pd.DataFrame(minmax, columns=['sg', 'c'], index=['max', 'min'])
+    mm_html = mm_df.to_html()
+
     days_locator = dates.DayLocator(interval=1)
     days_format = dates.DateFormatter('%d')
     plt.ioff()
@@ -93,12 +97,12 @@ def make_plots(options, data, data_by_date):
     ax3.plot(data_by_date.index, data_by_date['c'])
     plt.savefig(f3, dpi=200)
 
-    return date_html, (f0, f1, f2, f3)
+    return date_html, mm_html, (f0, f1, f2, f3)
 
 
-def send_mail(message, options):
+def send_mail(message, options1):
     # https://stackoverflow.com/questions/73781/sending-mail-via-sendmail-from-python
-    if options.mail_command:
+    if options1.mail_command:
         p = Popen(["/usr/sbin/sendmail", "-t", "-oi"], stdin=PIPE)
         p.communicate(message.as_bytes())
     else:
@@ -133,7 +137,7 @@ oparser.add_argument("-f", dest="from_mail",
 options = oparser.parse_args()
 
 data, data_by_date = get_data(options)
-html, plot_files = make_plots(options, data, data_by_date)
+html0, html1, plot_files = make_plots(options, data, data_by_date)
 
 if options.mail:
     mail = EmailMessage()
@@ -144,7 +148,10 @@ if options.mail:
 
     # https://stackoverflow.com/questions/56711321/addng-attachment-to-an-emailmessage-raises-typeerror-set-text-content-got-an
     # accepts a maintype argument if the content is bytes, but not if the content is str
-    mail.add_attachment(html.encode('utf-8'), disposition='inline',
+    mail.add_attachment(html0.encode('utf-8'), disposition='inline',
+                        maintype='text', subtype='html')
+
+    mail.add_attachment(html1.encode('utf-8'), disposition='inline',
                         maintype='text', subtype='html')
 
     # https://docs.python.org/3/library/email.examples.html
