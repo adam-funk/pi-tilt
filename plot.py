@@ -152,9 +152,6 @@ for color, csv_file in config['hydrometers'].items():
     mail.add_attachment(html0.encode('utf-8'), disposition='inline',
                         maintype='text', subtype='html')
 
-    mail.add_attachment(html1.encode('utf-8'), disposition='inline',
-                        maintype='text', subtype='html')
-
     # https://docs.python.org/3/library/email.examples.html
     for file in plot_files:
         with open(file, 'rb') as fp:
@@ -162,6 +159,10 @@ for color, csv_file in config['hydrometers'].items():
         mail.add_attachment(img_data, disposition='inline',
                             maintype='image',
                             subtype=imghdr.what(None, img_data))
+
+    mail.add_attachment(html1.encode('utf-8'), disposition='inline',
+                        maintype='text', subtype='html')
+
     if options.verbose:
         print('Mail headers:')
         for k, v in mail.items():
