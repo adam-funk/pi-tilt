@@ -144,8 +144,8 @@ for color, csv_file in config['hydrometers'].items():
     mail_tos = config.get('mail_to', ['to@example.com'])
     mail['To'] = ', '.join(mail_tos)
     mail['From'] = config.get('mail_from', 'from@example.com')
-    dt = datetime.datetime.now().strftime('%a %H:%M')
-    mail['Subject'] = f'Hydrometer {color} {dt}'
+    dt = datetime.datetime.now().strftime('%d %a %H:%M')
+    mail['Subject'] = f'Hydrometer: {color} {dt}'
 
     # https://stackoverflow.com/questions/56711321/addng-attachment-to-an-emailmessage-raises-typeerror-set-text-content-got-an
     # add_attachment accepts a maintype argument if the content is bytes, but not if the content is str
