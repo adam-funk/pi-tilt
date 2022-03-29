@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import datetime
+import warnings
 
 import matplotlib
 matplotlib.use('Agg')
@@ -26,13 +27,19 @@ FIGSIZE = (15, 6)
 
 
 def meanr(x):
-    # ignore NaN (blank fields in the CSV
-    return round(np.nanmean(x), 1)
+    # ignore NaN (blank fields in the CSV) and averages over missing times
+    with warnings.catch_warnings():
+        warnings.filterwarnings(action='ignore', category=RuntimeWarning, message='Mean of empty slice')
+        result = round(np.nanmean(x), 1)
+    return result
 
 
 def medianr(x):
-    # ignore NaN (blank fields in the CSV
-    return round(np.nanmedian(x), 1)
+    # ignore NaN (blank fields in the CSV) and averages over missing times
+    with warnings.catch_warnings():
+        warnings.filterwarnings(action='ignore', category=RuntimeWarning, message='Mean of empty slice')
+        result = round(np.nanmedian(x), 1)
+    return result
 
 
 def get_data(input_file):
