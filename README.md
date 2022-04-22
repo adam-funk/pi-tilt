@@ -56,6 +56,3 @@ use as two cron jobs (recording data and mailing plots).
 
 * https://tilthydrometer.com/
 
-## TODO
-
-* use `BytesIO` instead of `/tmp` files
