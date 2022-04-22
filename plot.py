@@ -107,10 +107,10 @@ def make_plots(config, data, data_by_date, color):
     plt.savefig(f3, dpi=200)
 
     fig4, ax4a = plt.subplots(figsize=FIGSIZE)
-    ax4b = ax4a.twinx()
     ax4a.xaxis.set_major_locator(days_locator)
     ax4a.xaxis.set_major_formatter(days_format)
     ax4a.format_xdata = days_format
+    ax4b = ax4a.twinx()
     ax4a.plot(data['time'], data['sg'], color="red")
     ax4b.plot(data['time'], data['c'], color="yellow")
     plt.savefig(f4, dpi=200)
