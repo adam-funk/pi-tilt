@@ -114,8 +114,9 @@ def make_plots(config, data, data_by_date, color):
     ax4b.xaxis.set_major_locator(days_locator)
     ax4b.xaxis.set_major_formatter(days_format)
     ax4b.format_xdata = days_format
-    ax4a.plot(data['time'], data['sg'], color="red")
-    ax4b.plot(data['time'], data['c'], color="yellow")
+    ax4b.grid(True, which='both')
+    ax4a.plot(data['time'], data['sg'], color="purple")
+    ax4b.plot(data['time'], data['c'], color="red")
     plt.savefig(f4, dpi=200)
 
     return date_html, mm_html, [f0, f1, f2, f3, f4]
