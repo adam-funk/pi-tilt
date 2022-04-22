@@ -111,6 +111,9 @@ def make_plots(config, data, data_by_date, color):
     ax4a.xaxis.set_major_formatter(days_format)
     ax4a.format_xdata = days_format
     ax4b = ax4a.twinx()
+    ax4b.xaxis.set_major_locator(days_locator)
+    ax4b.xaxis.set_major_formatter(days_format)
+    ax4b.format_xdata = days_format
     ax4a.plot(data['time'], data['sg'], color="red")
     ax4b.plot(data['time'], data['c'], color="yellow")
     plt.savefig(f4, dpi=200)
