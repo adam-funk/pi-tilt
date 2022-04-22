@@ -38,7 +38,7 @@ use as two cron jobs (recording data and mailing plots).
 
 * `readings`, `wait_seconds`: interval between readings
 
-* `readings`, `give_up_mintues`: quit after this amount of time
+* `readings`, `give_up_minutes`: quit after this amount of time
 
 * `mail_from`: e-mail address
 
@@ -59,4 +59,3 @@ use as two cron jobs (recording data and mailing plots).
 ## TODO
 
 * use `BytesIO` instead of `/tmp` files
-* 
