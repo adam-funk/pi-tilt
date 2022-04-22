@@ -62,6 +62,7 @@ def make_plots(config, data, data_by_date, color):
     f1 = os.path.join(output_dir, 'temperature.png')
     f2 = os.path.join(output_dir, 'density_date.png')
     f3 = os.path.join(output_dir, 'temperature_date.png')
+    f4 = os.path.join(output_dir, 'both.png')
 
     date_html = data_by_date.to_html()
 
@@ -105,7 +106,16 @@ def make_plots(config, data, data_by_date, color):
     ax3.plot(data_by_date.index, data_by_date['c'])
     plt.savefig(f3, dpi=200)
 
-    return date_html, mm_html, (f0, f1, f2, f3)
+    fig4, ax4a = plt.subplots(figsize=FIGSIZE)
+    ax4b = ax4a.twinx()
+    ax4a.xaxis.set_major_locator(days_locator)
+    ax4a.xaxis.set_major_formatter(days_format)
+    ax4a.format_xdata = days_format
+    ax4a.plot(data['time'], data['sg'], color="red")
+    ax4b.plot(data['time'], data['c'], color="yellow")
+    plt.savefig(f4, dpi=200)
+
+    return date_html, mm_html, [f0, f1, f2, f3, f4]
 
 
 def send_mail(message):
