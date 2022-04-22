@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 import datetime
 import warnings
+from io import BytesIO
 
 import matplotlib
+
 matplotlib.use('Agg')
 import argparse
 import imghdr
 import os
-import time
 from email.message import EmailMessage
 import pandas as pd
 import numpy as np
@@ -43,30 +44,22 @@ def medianr(x):
 
 
 def get_data(input_file):
-    data = pd.read_csv(input_file, names=['color', 'epoch', 'iso', 'sg', 'c', 'f', 'n'],
-                       index_col='epoch')
-    data['time'] = pd.to_datetime(data['iso'])
-    data['date'] = data['time'].dt.date
-    data['c'] = round(data['c'], 1)
+    data0 = pd.read_csv(input_file, names=['color', 'epoch', 'iso', 'sg', 'c', 'f', 'n'],
+                        index_col='epoch')
+    data0['time'] = pd.to_datetime(data0['iso'])
+    data0['date'] = data0['time'].dt.date
+    data0['c'] = round(data0['c'], 1)
     # aggregated by date
     columns = [min, meanr, medianr, max]
-    date_data = data.groupby('date').agg({'sg': columns,
+    date_data = data0.groupby('date').agg({'sg': columns,
                                           'c': columns}).rename(columns={'meanr': 'mean', 'medianr': 'mdn'})
-    return data, date_data
+    return data0, date_data
 
 
-def make_plots(config, data, data_by_date, color):
-    output_dir = '/tmp/hydrometer-plots-%i-%s' % (int(time.time()), color)
-    os.mkdir(output_dir)
-    f0 = os.path.join(output_dir, 'density.png')
-    f1 = os.path.join(output_dir, 'temperature.png')
-    f2 = os.path.join(output_dir, 'density_date.png')
-    f3 = os.path.join(output_dir, 'temperature_date.png')
-    f4 = os.path.join(output_dir, 'both.png')
-
-    date_html = data_by_date.to_html()
-
-    minmax = [[data['sg'].max(), data['c'].max()], [data['sg'].min(), data['c'].min()]]
+def make_plots(data0, data_by_date0):
+    pngs = []
+    date_html = data_by_date0.to_html()
+    minmax = [[data0['sg'].max(), data0['c'].max()], [data0['sg'].min(), data0['c'].min()]]
     mm_df = pd.DataFrame(minmax, columns=['sg', 'c'], index=['max', 'min'])
     mm_html = mm_df.to_html()
 
@@ -74,38 +67,47 @@ def make_plots(config, data, data_by_date, color):
     days_format = dates.DateFormatter('%d')
     plt.ioff()
 
+    buffer0 = BytesIO()
     fig0, ax0 = plt.subplots(figsize=FIGSIZE)
     ax0.xaxis.set_major_locator(days_locator)
     ax0.xaxis.set_major_formatter(days_format)
     ax0.format_xdata = days_format
     ax0.grid(True, which='both')
-    ax0.plot(data['time'], data['sg'])
-    plt.savefig(f0, dpi=200)
+    ax0.plot(data0['time'], data0['sg'])
+    plt.savefig(buffer0, dpi=200, format='png')
+    pngs.append(buffer0)
 
+    buffer1 = BytesIO()
     fig1, ax1 = plt.subplots(figsize=FIGSIZE)
     ax1.xaxis.set_major_locator(days_locator)
     ax1.xaxis.set_major_formatter(days_format)
     ax1.format_xdata = days_format
     ax1.grid(True, which='both')
-    ax1.plot(data['time'], data['c'])
-    plt.savefig(f1, dpi=200)
+    ax1.plot(data0['time'], data0['c'])
+    plt.savefig(buffer1, dpi=200, format='png')
+    pngs.append(buffer1)
 
+    buffer2 = BytesIO()
     fig2, ax2 = plt.subplots(figsize=FIGSIZE)
     ax2.xaxis.set_major_locator(days_locator)
     ax2.xaxis.set_major_formatter(days_format)
     ax2.format_xdata = days_format
     ax2.grid(True, which='both')
-    ax2.plot(data_by_date.index, data_by_date['sg'])
-    plt.savefig(f2, dpi=200)
+    ax2.plot(data_by_date0.index, data_by_date0['sg'])
+    plt.savefig(buffer2, dpi=200, format='png')
+    pngs.append(buffer2)
 
+    buffer3 = BytesIO()
     fig3, ax3 = plt.subplots(figsize=FIGSIZE)
     ax3.xaxis.set_major_locator(days_locator)
     ax3.xaxis.set_major_formatter(days_format)
     ax3.format_xdata = days_format
     ax3.grid(True, which='both')
-    ax3.plot(data_by_date.index, data_by_date['c'])
-    plt.savefig(f3, dpi=200)
+    ax3.plot(data_by_date0.index, data_by_date0['c'])
+    plt.savefig(buffer3, dpi=200, format='png')
+    pngs.append(buffer3)
 
+    buffer4 = BytesIO()
     fig4, ax4a = plt.subplots(figsize=FIGSIZE)
     ax4a.xaxis.set_major_locator(days_locator)
     ax4a.xaxis.set_major_formatter(days_format)
@@ -115,11 +117,12 @@ def make_plots(config, data, data_by_date, color):
     ax4b.xaxis.set_major_formatter(days_format)
     ax4b.format_xdata = days_format
     ax4b.grid(True, which='both')
-    ax4a.plot(data['time'], data['sg'], color="purple")
-    ax4b.plot(data['time'], data['c'], color="red")
-    plt.savefig(f4, dpi=200)
+    ax4a.plot(data0['time'], data0['sg'], color="purple")
+    ax4b.plot(data0['time'], data0['c'], color="red")
+    plt.savefig(buffer4, dpi=200, format='png')
+    pngs.append(buffer4)
 
-    return date_html, mm_html, [f0, f1, f2, f3, f4]
+    return date_html, mm_html, pngs
 
 
 def send_mail(message):
@@ -158,7 +161,7 @@ for color, csv_file in config['hydrometers'].items():
     if options.verbose:
         print(f'Loading CSV: {csv_path} for {color}')
     data, data_by_date = get_data(csv_path)
-    html0, html1, plot_files = make_plots(config, data, data_by_date, color)
+    html0, html1, plots = make_plots(data, data_by_date)
 
     mail = EmailMessage()
     mail.set_charset('utf-8')
@@ -174,9 +177,9 @@ for color, csv_file in config['hydrometers'].items():
                         maintype='text', subtype='html')
 
     # https://docs.python.org/3/library/email.examples.html
-    for file in plot_files:
-        with open(file, 'rb') as fp:
-            img_data = fp.read()
+    for buffer in plots:
+        buffer.seek(0)
+        img_data = buffer.read()
         mail.add_attachment(img_data, disposition='inline',
                             maintype='image',
                             subtype=imghdr.what(None, img_data))
