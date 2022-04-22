@@ -46,7 +46,7 @@ use as two cron jobs (recording data and mailing plots).
 
 ## Acknowledgements and notes
 
-* Forked from https://github.com/atlefren/pytilt and updated to Python 3
+* Derived from https://github.com/atlefren/pytilt and updated to Python 3
 
 * The code in `blescan-py` is adapted from https://github.com/switchdoclabs/iBeacon-Scanner-
 
@@ -56,3 +56,7 @@ use as two cron jobs (recording data and mailing plots).
 
 * https://tilthydrometer.com/
 
+## TODO
+
+* use `BytesIO` instead of `/tmp` files
+* 
