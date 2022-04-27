@@ -1,4 +1,4 @@
-# Pytilt
+# pi-tilt
 
 Tools for reading your Tilt hydrometer on a Raspberry Pi, storing the
 results as CSV, and mailing you summaries and plots.  Intended for
