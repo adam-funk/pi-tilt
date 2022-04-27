@@ -5,6 +5,12 @@ from io import BytesIO
 
 import matplotlib
 
+# TODO switch away from the pyplot stateful stuff
+
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+import matplotlib.figure
+from matplotlib.figure import Figure
+
 matplotlib.use('Agg')
 import argparse
 import imghdr
