@@ -12,6 +12,7 @@ from subprocess import Popen, PIPE
 import numpy as np
 import pandas as pd
 from matplotlib import dates
+from matplotlib import figure
 from matplotlib.figure import Figure
 
 FIGSIZE = (15, 6)
@@ -66,7 +67,7 @@ def make_plots(data0, data_by_date0):
     days_format = dates.DateFormatter('%d')
 
     buffer0 = BytesIO()
-    fig0 = Figure(figsize=FIGSIZE)
+    fig0 = figure.figure(figsize=FIGSIZE)
     ax0 = fig0.subplots()
     ax0.xaxis.set_major_locator(days_locator)
     ax0.xaxis.set_major_formatter(days_format)
