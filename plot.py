@@ -1,27 +1,18 @@
 #!/usr/bin/env python3
-import datetime
-import warnings
-from io import BytesIO
-
-import matplotlib
-
-# TODO switch away from the pyplot stateful stuff
-
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-import matplotlib.figure
-from matplotlib.figure import Figure
-
-matplotlib.use('Agg')
 import argparse
+import datetime
 import imghdr
-import os
-from email.message import EmailMessage
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import dates
-from subprocess import Popen, PIPE
 import json
+import os
+import warnings
+from email.message import EmailMessage
+from io import BytesIO
+from subprocess import Popen, PIPE
+
+import numpy as np
+import pandas as pd
+from matplotlib import dates
+from matplotlib.figure import Figure
 
 FIGSIZE = (15, 6)
 
@@ -31,6 +22,8 @@ FIGSIZE = (15, 6)
 # https://matplotlib.org/api/dates_api.html#matplotlib.dates.MonthLocator
 # https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot
 # https://matplotlib.org/tutorials/introductory/pyplot.html
+# using Figure instead of pyplot
+# https://gist.github.com/matthewfeickert/84245837f09673b2e7afea929c016904
 
 
 def meanr(x):
@@ -71,50 +64,54 @@ def make_plots(data0, data_by_date0):
 
     days_locator = dates.DayLocator(interval=1)
     days_format = dates.DateFormatter('%d')
-    plt.ioff()
 
     buffer0 = BytesIO()
-    fig0, ax0 = plt.subplots(figsize=FIGSIZE)
+    fig0 = Figure(figsize=FIGSIZE)
+    ax0 = fig0.subplots()
     ax0.xaxis.set_major_locator(days_locator)
     ax0.xaxis.set_major_formatter(days_format)
     ax0.format_xdata = days_format
     ax0.grid(True, which='both')
     ax0.plot(data0['time'], data0['sg'])
-    plt.savefig(buffer0, dpi=200, format='png')
+    fig0.savefig(buffer0, dpi=200, format='png')
     pngs.append(buffer0)
 
     buffer1 = BytesIO()
-    fig1, ax1 = plt.subplots(figsize=FIGSIZE)
+    fig1 = Figure(figsize=FIGSIZE)
+    ax1 = fig1.subplots()
     ax1.xaxis.set_major_locator(days_locator)
     ax1.xaxis.set_major_formatter(days_format)
     ax1.format_xdata = days_format
     ax1.grid(True, which='both')
     ax1.plot(data0['time'], data0['c'])
-    plt.savefig(buffer1, dpi=200, format='png')
+    fig1.savefig(buffer1, dpi=200, format='png')
     pngs.append(buffer1)
 
     buffer2 = BytesIO()
-    fig2, ax2 = plt.subplots(figsize=FIGSIZE)
+    fig2 = Figure(figsize=FIGSIZE)
+    ax2 = fig2.subplots()
     ax2.xaxis.set_major_locator(days_locator)
     ax2.xaxis.set_major_formatter(days_format)
     ax2.format_xdata = days_format
     ax2.grid(True, which='both')
     ax2.plot(data_by_date0.index, data_by_date0['sg'])
-    plt.savefig(buffer2, dpi=200, format='png')
+    fig2.savefig(buffer2, dpi=200, format='png')
     pngs.append(buffer2)
 
     buffer3 = BytesIO()
-    fig3, ax3 = plt.subplots(figsize=FIGSIZE)
+    fig3 = Figure(figsize=FIGSIZE)
+    ax3 = fig3.subplots()
     ax3.xaxis.set_major_locator(days_locator)
     ax3.xaxis.set_major_formatter(days_format)
     ax3.format_xdata = days_format
     ax3.grid(True, which='both')
     ax3.plot(data_by_date0.index, data_by_date0['c'])
-    plt.savefig(buffer3, dpi=200, format='png')
+    fig3.savefig(buffer3, dpi=200, format='png')
     pngs.append(buffer3)
 
     buffer4 = BytesIO()
-    fig4, ax4a = plt.subplots(figsize=FIGSIZE)
+    fig4 = Figure(figsize=FIGSIZE)
+    ax4a = fig4.subplots()
     ax4a.xaxis.set_major_locator(days_locator)
     ax4a.xaxis.set_major_formatter(days_format)
     ax4a.format_xdata = days_format
@@ -125,7 +122,7 @@ def make_plots(data0, data_by_date0):
     ax4b.grid(True, which='both')
     ax4a.plot(data0['time'], data0['sg'], color="purple")
     ax4b.plot(data0['time'], data0['c'], color="red")
-    plt.savefig(buffer4, dpi=200, format='png')
+    fig4.savefig(buffer4, dpi=200, format='png')
     pngs.append(buffer4)
 
     return date_html, mm_html, pngs
