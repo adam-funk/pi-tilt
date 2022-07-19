@@ -83,7 +83,7 @@ def collect_data(config0, verbose):
     return start_epoch, recordings
 
 
-def process_data(config0, recordings, default_epoch0):
+def process_data(config0, recordings, default_epoch0, verbose):
     default_timestamp = epoch_to_timestamp(default_epoch0)
     results = []
     # list of lists:
@@ -102,6 +102,9 @@ def process_data(config0, recordings, default_epoch0):
             results.append([color, epoch, timestamp, gravity, celsius, fahrenheit, readings])
         else:
             results.append([color, default_epoch0, default_timestamp, '', '', '', 0])
+    if verbose:
+        for result in results:
+            print(*result)
     return results
 
 
@@ -173,7 +176,7 @@ if __name__ == '__main__':
     blescan.hci_le_set_scan_parameters(sock)
     blescan.hci_enable_le_scan(sock)
     default_epoch, raw_data = collect_data(config, options.verbose)
-    processed_data = process_data(config, raw_data, default_epoch)
+    processed_data = process_data(config, raw_data, default_epoch, options.verbose)
     store_data(config, base_dir, options.verbose, processed_data)
 
 
