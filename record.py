@@ -50,12 +50,12 @@ def epoch_to_timestamp(epoch):
 
 def collect_data(config0, verbose):
     cutoff = time.time() + 60 * config0['give_up_minutes']
+    start_epoch = round(time.time())
+    # used later for missing readings
     nbr_readings = config0['readings']
     wait_seconds = config0['wait_seconds']
     recordings = defaultdict(list)
-    # str color -> list of (epoch, grav, F) tuples
-
-    start_epoch = round(time.time())
+    # output: str color -> list of (epoch, gravity, fahrenheit) tuples
 
     for i in range(nbr_readings):
         if verbose:
@@ -85,8 +85,8 @@ def collect_data(config0, verbose):
 def process_data(config0, recordings, default_epoch0, verbose):
     default_timestamp = epoch_to_timestamp(default_epoch0)
     results = []
-    # list of lists:
-    # color, epoch, timestamp, gravity, celsius, fahrenheit, readings
+    # output: list of lists:
+    # [color, epoch, timestamp, gravity, celsius, fahrenheit, readings]
     for color in config0['hydrometers'].keys():
         if color in recordings:
             readings = len(recordings[color])
@@ -100,6 +100,7 @@ def process_data(config0, recordings, default_epoch0, verbose):
             celsius = to_celsius(fahrenheit)
             results.append([color, epoch, timestamp, gravity, celsius, fahrenheit, readings])
         else:
+            # Missing readings: the empty string will be a Nan in pandas
             results.append([color, default_epoch0, default_timestamp, '', '', '', 0])
     if verbose:
         for result in results:
@@ -158,6 +159,7 @@ if __name__ == '__main__':
 
     blescan.hci_le_set_scan_parameters(sock)
     blescan.hci_enable_le_scan(sock)
+    
     default_epoch, raw_data = collect_data(config, options.verbose)
     processed_data = process_data(config, raw_data, default_epoch, options.verbose)
     store_data(config, base_dir, options.verbose, processed_data)
