@@ -42,77 +42,95 @@ def to_celsius(fahrenheit):
 
 
 def keep_going(cutoff):
-    if cutoff == None:
-        return True
     return time.time() < cutoff
 
 
-def monitor_tilt(config, base_dir, options):
-    epoch_times = defaultdict(list)
-    gravities = defaultdict(list)
-    fahrenheits = defaultdict(list)
+def epoch_to_timestamp(epoch):
+    return datetime.datetime.fromtimestamp(epoch).isoformat(timespec='seconds')
 
-    try:
-        cutoff  = time.time() + 60 * config['readings']['give_up_minutes']
-    except KeyError:
-        cutoff = 0
 
-    try:
-        nbr_readings = config['readings']['number']
-    except KeyError:
-        nbr_readings = 1
+def collect_data(config0, verbose):
+    cutoff  = time.time() + 60 * config0['readings']['give_up_minutes']
+    nbr_readings = config0['readings']['number']
+    wait_seconds = config0['readings']['wait_seconds']
+    recordings = defaultdict(list)
+    # str color -> list of (epoch, grav, F) tuples
 
-    try:
-        wait_seconds = config['readings']['wait_seconds']
-    except KeyError:
-        wait_seconds = 1
-        
+    start_epoch = round(time.time())
+
     for i in range(nbr_readings):
-        if options.verbose:
+        if verbose:
             print('Reading', i+1, 'of', nbr_readings)
-        if (i > 0) and keep_going(cutoff):
-            if options.verbose:
-                print('Waiting', wait_seconds, '...')
-            time.sleep(wait_seconds)
         found = False
         while keep_going(cutoff) and (not found):
             beacons = distinct(blescan.parse_events(sock, 10))
-            if options.verbose:
+            if verbose:
                 print('Found', len(beacons), 'beacons')
             for beacon in beacons:
                 if beacon['uuid'] in TILTS.keys():
                     found = True
                     color = TILTS[beacon['uuid']]
-                    epoch_times[color].append(round(time.time()))
-                    gravities[color].append(beacon['minor'])
-                    fahrenheits[color].append(beacon['major'])
-                    if options.verbose:
-                        print(color, *epoch_times[color])
-                        print(*gravities[color])
-                        print(*fahrenheits[color])
-    for color, epochs in epoch_times.items():
-        readings = len(epochs)
-        if readings:
+                    epoch = round(time.time())
+                    gravity = beacon['minor']
+                    fahrenheit = beacon['major']
+                    recordings[color].append((epoch, gravity, fahrenheit))
+                    if verbose:
+                        print(color, epoch, gravity, fahrenheit)
+        if (i < nbr_readings - 1) and keep_going(cutoff):
+            if verbose:
+                print('Waiting', wait_seconds, '...')
+            time.sleep(wait_seconds)
+    return start_epoch, recordings
+
+
+def process_data(config0, recordings, default_epoch0):
+    default_timestamp = epoch_to_timestamp(default_epoch0)
+    results = []
+    # list of lists:
+    # color, epoch, timestamp, gravity, celsius, fahrenheit, readings
+    for color in config0['hydrometers'].keys():
+        if color in recordings:
+            readings = len(recordings[color])
+            epochs = [t[0] for t in recordings[color]]
+            gravities = [t[1] for t in recordings[color]]
+            fahrenheits = [t[2] for t in recordings[color]]
             epoch = round(statistics.mean(epochs))
-            timestamp = datetime.datetime.now().isoformat(timespec='seconds')
-            gravity = round(statistics.median(gravities[color]), 1)
-            fahrenheit = round(statistics.median(fahrenheits[color]), 1)
+            timestamp = epoch_to_timestamp(epoch)
+            gravity = round(statistics.median(gravities), 1)
+            fahrenheit = round(statistics.median(fahrenheits), 1)
             celsius = to_celsius(fahrenheit)
-            record_data(config, base_dir, options, color, [color, epoch, timestamp, gravity, celsius, fahrenheit, readings])
+            results.append([color, epoch, timestamp, gravity, celsius, fahrenheit, readings])
         else:
-            # Each empty string column will produce NaN in pandas
-            record_data(config, base_dir, options, color, [color, epoch, timestamp, '', '', '', readings])
+            results.append([color, default_epoch0, default_timestamp, '', '', '', 0])
+    return results
+
+
+def store_data(config0, base_dir0, verbose, data_lines):
+    for data_line in data_lines:
+        color = data_line[0]
+        output_file = config0.get('hydrometers', []).get(color, None)
+        if output_file:
+            output_path = os.path.join(base_dir0, output_file)
+            if verbose:
+                print(f'Output: {output_path}')
+            with open(output_path, 'a') as f0:
+                writer = csv.writer(f0, lineterminator='\n')
+                writer.writerow(data_line)
+            if verbose:
+                print('Got', *data_line)
+        else:
+            print('Output', *data_line)
     return
 
 
-def record_data(config, base_dir, options, color, data):
-    output_file = config.get('hydrometers', []).get(color, None)
+def record_data(config0, base_dir0, verbose, color, data):
+    output_file = config0.get('hydrometers', []).get(color, None)
     if output_file:
-        output_path = os.path.join(base_dir, output_file)
+        output_path = os.path.join(base_dir0, output_file)
         if options.verbose:
             print(f'Output: {output_path}')
-        with open(output_path, 'a') as f:
-            writer = csv.writer(f, lineterminator='\n')
+        with open(output_path, 'a') as f0:
+            writer = csv.writer(f0, lineterminator='\n')
             writer.writerow(data)
         if options.verbose:
             print('Got', *data)
@@ -154,6 +172,8 @@ if __name__ == '__main__':
 
     blescan.hci_le_set_scan_parameters(sock)
     blescan.hci_enable_le_scan(sock)
-    monitor_tilt(config, base_dir, options)
+    default_epoch, raw_data = collect_data(config, options.verbose)
+    processed_data = process_data(config, raw_data, default_epoch)
+    store_data(config, base_dir, options.verbose, processed_data)
 
 
