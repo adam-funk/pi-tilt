@@ -94,7 +94,7 @@ def process_data(config0, recordings, default_epoch0, verbose):
             gravities = [t[1] for t in recordings[color]]
             fahrenheits = [t[2] for t in recordings[color]]
             epoch = round(statistics.mean(epochs))
-            timestamp = epoch_to_timestamp(epoch)
+            timestamp = epoch_to_timestamp(max(epochs))
             gravity = round(statistics.median(gravities), 1)
             fahrenheit = round(statistics.median(fahrenheits), 1)
             celsius = to_celsius(fahrenheit)
