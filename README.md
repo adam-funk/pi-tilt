@@ -33,12 +33,12 @@ use as two cron jobs (recording data and mailing plots).
 * `hydrometers`: map of Tilt colors to CSV filenames (absolute or
   relative to the directory the config file is in)
   
-* `readings`, `number`: number of readings to take (then record the
+* `readings`: number of readings to take (then record the
   median of the density and temperature readings)
 
-* `readings`, `wait_seconds`: interval between readings
+* `wait_seconds`: interval between readings
 
-* `readings`, `give_up_minutes`: quit after this amount of time
+* `give_up_minutes`: quit after this amount of time
 
 * `mail_from`: e-mail address
 

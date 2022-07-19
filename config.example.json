@@ -2,11 +2,9 @@
   "hydrometers": {
     "purple": "purple.csv"
   },
-  "readings": {
-    "number": 3,
-    "wait_seconds": 60,
-    "give_up_minutes": 8
-  },
+  "readings": 3,
+  "wait_seconds": 60,
+  "give_up_minutes": 8,
   "mail_from": "from@example.com",
   "mail_to": [
     "alice@example.com",

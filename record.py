@@ -12,18 +12,17 @@ import statistics
 from collections import defaultdict
 
 import bluetooth._bluetooth as bluez
-import blescan as blescan
-
+import blescan
 
 TILTS = {
-        'a495bb10c5b14b44b5121370f02d74de': 'red',
-        'a495bb20c5b14b44b5121370f02d74de': 'green',
-        'a495bb30c5b14b44b5121370f02d74de': 'black',
-        'a495bb40c5b14b44b5121370f02d74de': 'purple',
-        'a495bb50c5b14b44b5121370f02d74de': 'orange',
-        'a495bb60c5b14b44b5121370f02d74de': 'blue',
-        'a495bb70c5b14b44b5121370f02d74de': 'yellow',
-        'a495bb80c5b14b44b5121370f02d74de': 'pink',
+    'a495bb10c5b14b44b5121370f02d74de': 'red',
+    'a495bb20c5b14b44b5121370f02d74de': 'green',
+    'a495bb30c5b14b44b5121370f02d74de': 'black',
+    'a495bb40c5b14b44b5121370f02d74de': 'purple',
+    'a495bb50c5b14b44b5121370f02d74de': 'orange',
+    'a495bb60c5b14b44b5121370f02d74de': 'blue',
+    'a495bb70c5b14b44b5121370f02d74de': 'yellow',
+    'a495bb80c5b14b44b5121370f02d74de': 'pink',
 }
 
 
@@ -50,9 +49,9 @@ def epoch_to_timestamp(epoch):
 
 
 def collect_data(config0, verbose):
-    cutoff  = time.time() + 60 * config0['readings']['give_up_minutes']
-    nbr_readings = config0['readings']['number']
-    wait_seconds = config0['readings']['wait_seconds']
+    cutoff = time.time() + 60 * config0['give_up_minutes']
+    nbr_readings = config0['readings']
+    wait_seconds = config0['wait_seconds']
     recordings = defaultdict(list)
     # str color -> list of (epoch, grav, F) tuples
 
@@ -60,7 +59,7 @@ def collect_data(config0, verbose):
 
     for i in range(nbr_readings):
         if verbose:
-            print('Reading', i+1, 'of', nbr_readings)
+            print('Reading', i + 1, 'of', nbr_readings)
         found = False
         while keep_going(cutoff) and (not found):
             beacons = distinct(blescan.parse_events(sock, 10))
@@ -126,22 +125,6 @@ def store_data(config0, base_dir0, verbose, data_lines):
     return
 
 
-def record_data(config0, base_dir0, verbose, color, data):
-    output_file = config0.get('hydrometers', []).get(color, None)
-    if output_file:
-        output_path = os.path.join(base_dir0, output_file)
-        if options.verbose:
-            print(f'Output: {output_path}')
-        with open(output_path, 'a') as f0:
-            writer = csv.writer(f0, lineterminator='\n')
-            writer.writerow(data)
-        if options.verbose:
-            print('Got', *data)
-    else:
-        print('Output', *data)
-    return
-
-
 if __name__ == '__main__':
     oparser = argparse.ArgumentParser(description="record Tilt hydrometer data",
                                       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -178,5 +161,3 @@ if __name__ == '__main__':
     default_epoch, raw_data = collect_data(config, options.verbose)
     processed_data = process_data(config, raw_data, default_epoch, options.verbose)
     store_data(config, base_dir, options.verbose, processed_data)
-
-
