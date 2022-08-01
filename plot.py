@@ -43,7 +43,7 @@ def medianr(x):
 
 
 def get_data(input_file):
-    data0 = pd.read_csv(input_file, names=['color', 'epoch', 'iso', 'sg', 'c', 'f', 'n'],
+    data0 = pd.read_csv(input_file, names=['color', 'epoch', 'iso', 'sg', 'c', 'f', 'n', 'raw_sg'],
                         index_col='epoch')
     data0['time'] = pd.to_datetime(data0['iso'])
     data0['date'] = data0['time'].dt.date

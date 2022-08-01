@@ -86,7 +86,8 @@ def process_data(config0, recordings, default_epoch0, verbose):
     default_timestamp = epoch_to_timestamp(default_epoch0)
     results = []
     # output: list of lists:
-    # [color, epoch, timestamp, gravity, celsius, fahrenheit, readings]
+    # [color, epoch, timestamp, gravity, celsius, fahrenheit, readings, raw_gravity]
+    water = config0.get['water', 1000]
     for color in config0['hydrometers'].keys():
         if color in recordings:
             readings = len(recordings[color])
@@ -95,10 +96,11 @@ def process_data(config0, recordings, default_epoch0, verbose):
             fahrenheits = [t[2] for t in recordings[color]]
             epoch = round(statistics.mean(epochs))
             timestamp = epoch_to_timestamp(max(epochs))
-            gravity = round(statistics.median(gravities), 1)
+            raw_gravity = round(statistics.median(gravities), 1)
+            gravity = raw_gravity + 1000 - water
             fahrenheit = round(statistics.median(fahrenheits), 1)
             celsius = to_celsius(fahrenheit)
-            results.append([color, epoch, timestamp, gravity, celsius, fahrenheit, readings])
+            results.append([color, epoch, timestamp, gravity, celsius, fahrenheit, readings, raw_gravity])
         else:
             # Missing readings: the empty string will be a Nan in pandas
             results.append([color, default_epoch0, default_timestamp, '', '', '', 0])
