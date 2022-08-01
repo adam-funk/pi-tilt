@@ -87,7 +87,7 @@ def process_data(config0, recordings, default_epoch0, verbose):
     results = []
     # output: list of lists:
     # [color, epoch, timestamp, gravity, celsius, fahrenheit, readings, raw_gravity]
-    water = config0.get['water', 1000]
+    water = config0.get('water', 1000)
     for color in config0['hydrometers'].keys():
         if color in recordings:
             readings = len(recordings[color])
