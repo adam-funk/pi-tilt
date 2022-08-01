@@ -28,7 +28,9 @@ use as two cron jobs (recording data and mailing plots).
 00 09,21 * * *  path/to/pi-tilt/plot.py -c path/to/config.json
 ```
 
-## config file (all items are required)
+## config file
+
+### required items
 
 * `hydrometers`: map of Tilt colors to CSV filenames (absolute or
   relative to the directory the config file is in)
@@ -43,6 +45,11 @@ use as two cron jobs (recording data and mailing plots).
 * `mail_from`: e-mail address
 
 * `mail_to`: list of e-mail addresses
+
+### optional item
+
+* `water`: SG reading in water after changing the battery (for recalibration);
+  if absent, a default of 1000 will be used
 
 ## Acknowledgements and notes
 
