@@ -50,8 +50,10 @@ def get_data(input_file):
     data0['c'] = round(data0['c'], 1)
     # aggregated by date
     columns = [min, meanr, medianr, max]
-    date_data = data0.groupby('date').agg({'sg': columns,
-                                          'c': columns}).rename(columns={'meanr': 'mean', 'medianr': 'mdn'})
+    with warnings.catch_warnings:
+        warnings.filterwarnings(action='ignore', message='All-NaN slice encountered')
+        date_data = data0.groupby('date').agg({'sg': columns,
+                                              'c': columns}).rename(columns={'meanr': 'mean', 'medianr': 'mdn'})
     return data0, date_data
 
 
