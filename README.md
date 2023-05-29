@@ -4,6 +4,10 @@ Tools for reading your Tilt hydrometer on a Raspberry Pi, storing the
 results as CSV, and mailing you summaries and plots.  Intended for
 use as two cron jobs (recording data and mailing plots).
 
+## TODO
+
+* plot: detect missing file and send sensible message
+
 ## Dependencies
 
 * python bluez, matplotlib, pandas
