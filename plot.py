@@ -4,10 +4,10 @@ import datetime
 import imghdr
 import json
 import os
+import subprocess
 import warnings
 from email.message import EmailMessage
 from io import BytesIO
-from subprocess import Popen, PIPE
 
 import numpy as np
 import pandas as pd
@@ -131,8 +131,7 @@ def make_plots(data0, data_by_date0):
 
 
 def send_mail(message):
-    p = Popen(["/usr/sbin/sendmail", "-t", "-oi"], stdin=PIPE)
-    p.communicate(message.as_bytes())
+    subprocess.run(["/usr/sbin/sendmail", "-t", "-oi"], input=message.as_bytes())
     return
 
 
