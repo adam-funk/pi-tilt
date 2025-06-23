@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import datetime
-import imghdr
 import json
 import os
 import warnings
@@ -15,6 +14,7 @@ from matplotlib import dates
 from matplotlib.figure import Figure
 
 FIGSIZE = (15, 6)
+IMAGE_TYPE = 'png'
 
 # https://stackoverflow.com/questions/4931376/generating-matplotlib-graphs-without-a-running-x-server
 # https://matplotlib.org/gallery/text_labels_and_annotations/date.html
@@ -73,7 +73,7 @@ def make_plots(data0, data_by_date0):
     ax0.format_xdata = days_format
     ax0.grid(True, which='both')
     ax0.plot(data0['time'], data0['sg'])
-    fig0.savefig(buffer0, dpi=200, format='png')
+    fig0.savefig(buffer0, dpi=200, format=IMAGE_TYPE)
     pngs.append(buffer0)
 
     buffer1 = BytesIO()
@@ -84,7 +84,7 @@ def make_plots(data0, data_by_date0):
     ax1.format_xdata = days_format
     ax1.grid(True, which='both')
     ax1.plot(data0['time'], data0['c'])
-    fig1.savefig(buffer1, dpi=200, format='png')
+    fig1.savefig(buffer1, dpi=200, format=IMAGE_TYPE)
     pngs.append(buffer1)
 
     buffer2 = BytesIO()
@@ -95,7 +95,7 @@ def make_plots(data0, data_by_date0):
     ax2.format_xdata = days_format
     ax2.grid(True, which='both')
     ax2.plot(data_by_date0.index, data_by_date0['sg'])
-    fig2.savefig(buffer2, dpi=200, format='png')
+    fig2.savefig(buffer2, dpi=200, format=IMAGE_TYPE)
     pngs.append(buffer2)
 
     buffer3 = BytesIO()
@@ -106,7 +106,7 @@ def make_plots(data0, data_by_date0):
     ax3.format_xdata = days_format
     ax3.grid(True, which='both')
     ax3.plot(data_by_date0.index, data_by_date0['c'])
-    fig3.savefig(buffer3, dpi=200, format='png')
+    fig3.savefig(buffer3, dpi=200, format=IMAGE_TYPE)
     pngs.append(buffer3)
 
     buffer4 = BytesIO()
@@ -122,7 +122,7 @@ def make_plots(data0, data_by_date0):
     ax4b.grid(True, which='both')
     ax4a.plot(data0['time'], data0['sg'], color="purple")
     ax4b.plot(data0['time'], data0['c'], color="red")
-    fig4.savefig(buffer4, dpi=200, format='png')
+    fig4.savefig(buffer4, dpi=200, format=IMAGE_TYPE)
     pngs.append(buffer4)
 
     return date_html, mm_html, pngs
@@ -185,7 +185,7 @@ for color, csv_file in config['hydrometers'].items():
         img_data = buffer.read()
         mail.add_attachment(img_data, disposition='inline',
                             maintype='image',
-                            subtype=imghdr.what(None, img_data))
+                            subtype=IMAGE_TYPE)
 
     mail.add_attachment(html1.encode('utf-8'), disposition='inline',
                         maintype='text', subtype='html')
