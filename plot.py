@@ -67,27 +67,44 @@ def make_plots(data0, data_by_date0):
     days_locator = dates.DayLocator(interval=1)
     days_format = dates.DateFormatter('%d')
 
-    buffer0 = BytesIO()
-    fig0 = Figure(figsize=FIGSIZE)
-    ax0 = fig0.subplots()
-    ax0.xaxis.set_major_locator(days_locator)
-    ax0.xaxis.set_major_formatter(days_format)
-    ax0.format_xdata = days_format
-    ax0.grid(True, which='both')
-    ax0.plot(data0['time'], data0['sg'])
-    fig0.savefig(buffer0, dpi=200, format=IMAGE_TYPE)
-    pngs.append(buffer0)
+    buffer4 = BytesIO()
+    fig4 = Figure(figsize=FIGSIZE)
+    ax4a = fig4.subplots()
+    ax4a.xaxis.set_major_locator(days_locator)
+    ax4a.xaxis.set_major_formatter(days_format)
+    ax4a.format_xdata = days_format
+    ax4b = ax4a.twinx()
+    ax4b.xaxis.set_major_locator(days_locator)
+    ax4b.xaxis.set_major_formatter(days_format)
+    ax4b.format_xdata = days_format
+    ax4b.grid(True, which='both')
+    ax4a.plot(data0['time'], data0['sg'], color="purple")
+    ax4b.plot(data0['time'], data0['c'], color="red")
+    fig4.legend(loc='upper right')
+    fig4.savefig(buffer4, dpi=200, format=IMAGE_TYPE)
+    pngs.append(buffer4)
 
-    buffer1 = BytesIO()
-    fig1 = Figure(figsize=FIGSIZE)
-    ax1 = fig1.subplots()
-    ax1.xaxis.set_major_locator(days_locator)
-    ax1.xaxis.set_major_formatter(days_format)
-    ax1.format_xdata = days_format
-    ax1.grid(True, which='both')
-    ax1.plot(data0['time'], data0['c'])
-    fig1.savefig(buffer1, dpi=200, format=IMAGE_TYPE)
-    pngs.append(buffer1)
+    # buffer0 = BytesIO()
+    # fig0 = Figure(figsize=FIGSIZE)
+    # ax0 = fig0.subplots()
+    # ax0.xaxis.set_major_locator(days_locator)
+    # ax0.xaxis.set_major_formatter(days_format)
+    # ax0.format_xdata = days_format
+    # ax0.grid(True, which='both')
+    # ax0.plot(data0['time'], data0['sg'])
+    # fig0.savefig(buffer0, dpi=200, format=IMAGE_TYPE)
+    # pngs.append(buffer0)
+    #
+    # buffer1 = BytesIO()
+    # fig1 = Figure(figsize=FIGSIZE)
+    # ax1 = fig1.subplots()
+    # ax1.xaxis.set_major_locator(days_locator)
+    # ax1.xaxis.set_major_formatter(days_format)
+    # ax1.format_xdata = days_format
+    # ax1.grid(True, which='both')
+    # ax1.plot(data0['time'], data0['c'])
+    # fig1.savefig(buffer1, dpi=200, format=IMAGE_TYPE)
+    # pngs.append(buffer1)
 
     buffer2 = BytesIO()
     fig2 = Figure(figsize=FIGSIZE)
@@ -110,23 +127,6 @@ def make_plots(data0, data_by_date0):
     ax3.plot(data_by_date0.index, data_by_date0['c'])
     fig3.savefig(buffer3, dpi=200, format=IMAGE_TYPE)
     pngs.append(buffer3)
-
-    buffer4 = BytesIO()
-    fig4 = Figure(figsize=FIGSIZE)
-    ax4a = fig4.subplots()
-    ax4a.xaxis.set_major_locator(days_locator)
-    ax4a.xaxis.set_major_formatter(days_format)
-    ax4a.format_xdata = days_format
-    ax4b = ax4a.twinx()
-    ax4b.xaxis.set_major_locator(days_locator)
-    ax4b.xaxis.set_major_formatter(days_format)
-    ax4b.format_xdata = days_format
-    ax4b.grid(True, which='both')
-    ax4a.plot(data0['time'], data0['sg'], color="purple")
-    ax4b.plot(data0['time'], data0['c'], color="red")
-    fig4.legend(loc='upper right')
-    fig4.savefig(buffer4, dpi=200, format=IMAGE_TYPE)
-    pngs.append(buffer4)
 
     return date_html, mm_html, pngs
 
