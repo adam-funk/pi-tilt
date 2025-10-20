@@ -13,8 +13,9 @@ import pandas as pd
 from matplotlib import dates
 from matplotlib.figure import Figure
 
-FIGSIZE = (15, 6)
+FIG_SIZE = (15, 6)
 IMAGE_TYPE = 'png'
+
 
 # https://stackoverflow.com/questions/4931376/generating-matplotlib-graphs-without-a-running-x-server
 # https://matplotlib.org/gallery/text_labels_and_annotations/date.html
@@ -53,22 +54,21 @@ def get_data(input_file):
     with warnings.catch_warnings():
         warnings.filterwarnings(action='ignore', message='All-NaN slice encountered')
         date_data = data0.groupby('date').agg({'sg': columns,
-                                              'c': columns}).rename(columns={'meanr': 'mean', 'medianr': 'mdn'})
+                                               'c': columns}).rename(columns={'meanr': 'mean', 'medianr': 'mdn'})
     return data0, date_data
 
 
 def make_plots(data0, data_by_date0):
-    pngs = []
-    date_html = data_by_date0.to_html()
+    html_days = data_by_date0.to_html()
     minmax = [[data0['sg'].max(), data0['c'].max()], [data0['sg'].min(), data0['c'].min()]]
     mm_df = pd.DataFrame(minmax, columns=['sg', 'c'], index=['max', 'min'])
-    mm_html = mm_df.to_html()
+    html_overall = mm_df.to_html()
 
     days_locator = dates.DayLocator(interval=1)
     days_format = dates.DateFormatter('%d')
 
-    buffer4 = BytesIO()
-    fig4 = Figure(figsize=FIGSIZE)
+    buffer0 = BytesIO()
+    fig4 = Figure(figsize=FIG_SIZE)
     ax4a = fig4.subplots()
     ax4a.xaxis.set_major_locator(days_locator)
     ax4a.xaxis.set_major_formatter(days_format)
@@ -81,59 +81,49 @@ def make_plots(data0, data_by_date0):
     ax4a.plot(data0['time'], data0['sg'], color="purple")
     ax4b.plot(data0['time'], data0['c'], color="red")
     fig4.legend(['sg', 'c'], loc='upper right')
-    fig4.savefig(buffer4, dpi=200, format=IMAGE_TYPE)
-    pngs.append(buffer4)
+    fig4.savefig(buffer0, dpi=200, format=IMAGE_TYPE)
 
-    # buffer0 = BytesIO()
-    # fig0 = Figure(figsize=FIGSIZE)
-    # ax0 = fig0.subplots()
-    # ax0.xaxis.set_major_locator(days_locator)
-    # ax0.xaxis.set_major_formatter(days_format)
-    # ax0.format_xdata = days_format
-    # ax0.grid(True, which='both')
-    # ax0.plot(data0['time'], data0['sg'])
-    # fig0.savefig(buffer0, dpi=200, format=IMAGE_TYPE)
-    # pngs.append(buffer0)
-    #
-    # buffer1 = BytesIO()
-    # fig1 = Figure(figsize=FIGSIZE)
-    # ax1 = fig1.subplots()
-    # ax1.xaxis.set_major_locator(days_locator)
-    # ax1.xaxis.set_major_formatter(days_format)
-    # ax1.format_xdata = days_format
-    # ax1.grid(True, which='both')
-    # ax1.plot(data0['time'], data0['c'])
-    # fig1.savefig(buffer1, dpi=200, format=IMAGE_TYPE)
-    # pngs.append(buffer1)
-
-    buffer2 = BytesIO()
-    fig2 = Figure(figsize=FIGSIZE)
+    buffer_sg_days = BytesIO()
+    fig2 = Figure(figsize=FIG_SIZE)
     ax2 = fig2.subplots()
     ax2.xaxis.set_major_locator(days_locator)
     ax2.xaxis.set_major_formatter(days_format)
     ax2.format_xdata = days_format
     ax2.grid(True, which='both')
     ax2.plot(data_by_date0.index, data_by_date0['sg'])
-    fig2.savefig(buffer2, dpi=200, format=IMAGE_TYPE)
-    pngs.append(buffer2)
+    fig2.savefig(buffer_sg_days, dpi=200, format=IMAGE_TYPE)
 
-    buffer3 = BytesIO()
-    fig3 = Figure(figsize=FIGSIZE)
+    buffer_c_days = BytesIO()
+    fig3 = Figure(figsize=FIG_SIZE)
     ax3 = fig3.subplots()
     ax3.xaxis.set_major_locator(days_locator)
     ax3.xaxis.set_major_formatter(days_format)
     ax3.format_xdata = days_format
     ax3.grid(True, which='both')
     ax3.plot(data_by_date0.index, data_by_date0['c'])
-    fig3.savefig(buffer3, dpi=200, format=IMAGE_TYPE)
-    pngs.append(buffer3)
+    fig3.savefig(buffer_c_days, dpi=200, format=IMAGE_TYPE)
 
-    return date_html, mm_html, pngs
+    return html_days, html_overall, buffer0, buffer_sg_days, buffer_c_days
 
 
 def send_mail(message):
     subprocess.run(["/usr/sbin/sendmail", "-t", "-oi"], input=message.as_bytes())
     return
+
+
+def add_image_buffer(buffer0: BytesIO, mail0: EmailMessage):
+    buffer0.seek(0)
+    image = buffer0.read()
+    mail0.add_attachment(image, disposition='inline',
+                         maintype='image', subtype=IMAGE_TYPE)
+    return
+
+
+def add_html(html: str, mail0: EmailMessage):
+    # https://stackoverflow.com/questions/56711321/addng-attachment-to-an-emailmessage-raises-typeerror-set-text-content-got-an
+    # add_attachment accepts a maintype argument if the content is bytes, but not if the content is str
+    mail0.add_attachment(html.encode('utf-8'), disposition='inline',
+                         maintype='text', subtype='html')
 
 
 oparser = argparse.ArgumentParser(description="Mail summary and plots of Tilt hydrometer data",
@@ -160,13 +150,12 @@ if options.verbose:
 with open(options.config_file, 'r') as f:
     config = json.load(f)
 
-
 for color, csv_file in config['hydrometers'].items():
     csv_path = os.path.join(base_dir, csv_file)
     if options.verbose:
         print(f'Loading CSV: {csv_path} for {color}')
     data, data_by_date = get_data(csv_path)
-    html0, html1, plots = make_plots(data, data_by_date)
+    html_daily, html_summary, buffer_detail, buffer_daily_sg, buffer_daily_c = make_plots(data, data_by_date)
 
     mail = EmailMessage()
     mail.set_charset('utf-8')
@@ -176,25 +165,14 @@ for color, csv_file in config['hydrometers'].items():
     dt = datetime.datetime.now().strftime('%d %a %H:%M')
     mail['Subject'] = f'Hydrometer: {color} {dt}'
 
-    # https://stackoverflow.com/questions/56711321/addng-attachment-to-an-emailmessage-raises-typeerror-set-text-content-got-an
-    # add_attachment accepts a maintype argument if the content is bytes, but not if the content is str
-    mail.add_attachment(html0.encode('utf-8'), disposition='inline',
-                        maintype='text', subtype='html')
-
-    # https://docs.python.org/3/library/email.examples.html
-    for buffer in plots:
-        buffer.seek(0)
-        img_data = buffer.read()
-        mail.add_attachment(img_data, disposition='inline',
-                            maintype='image',
-                            subtype=IMAGE_TYPE)
-
-    mail.add_attachment(html1.encode('utf-8'), disposition='inline',
-                        maintype='text', subtype='html')
+    add_image_buffer(buffer_detail, mail)
+    add_html(html_daily, mail)
+    add_image_buffer(buffer_daily_sg, mail)
+    add_image_buffer(buffer_daily_c, mail)
+    add_html(html_summary, mail)
 
     if options.verbose:
         print('Mail headers:')
         for k, v in mail.items():
             print(k, v)
     send_mail(mail)
-
