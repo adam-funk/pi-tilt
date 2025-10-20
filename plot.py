@@ -80,7 +80,7 @@ def make_plots(data0, data_by_date0):
     ax4b.grid(True, which='both')
     ax4a.plot(data0['time'], data0['sg'], color="purple")
     ax4b.plot(data0['time'], data0['c'], color="red")
-    fig4.legend(['sg', 'c'], loc='upper right')
+    fig4.legend(['sg', 'c'], loc='center right')
     fig4.savefig(buffer0, dpi=200, format=IMAGE_TYPE)
 
     buffer_sg_days = BytesIO()
