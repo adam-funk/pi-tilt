@@ -28,7 +28,7 @@ use as two cron jobs (recording data and mailing plots).
 
 * The same config file is used for both.
 ```
-15 *     * * *  path/to/pi-tilt/record.py -c path/to/config.json 
+30 *     * * *  path/to/pi-tilt/record.py -c path/to/config.json 
 00 09,21 * * *  path/to/pi-tilt/plot.py -c path/to/config.json
 ```
 
