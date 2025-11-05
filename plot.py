@@ -78,8 +78,8 @@ def make_plots(data0, data_by_date0):
     ax4b.xaxis.set_major_formatter(days_format)
     ax4b.format_xdata = days_format
     ax4b.grid(True, which='both')
-    ax4a.plot(data0['time'], data0['sg'], color="purple")
     ax4b.plot(data0['time'], data0['c'], color="red")
+    ax4a.plot(data0['time'], data0['sg'], color="purple")
     fig4.legend(['sg', 'c'], loc='center right')
     fig4.savefig(buffer0, dpi=200, format=IMAGE_TYPE)
 
