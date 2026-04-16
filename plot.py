@@ -53,7 +53,8 @@ def medianr(x):
 
 def get_data(input_file: str):
     try:
-        data0 = pd.read_csv(input_file, names=COLUMN_NAMES, index_col='epoch')
+        # column names are now written above the first data line
+        data0 = pd.read_csv(input_file, index_col='epoch')
     except FileNotFoundError:
         print(f'File not found: {input_file}')
         sys.exit(1)
