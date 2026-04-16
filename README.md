@@ -4,6 +4,12 @@ Tools for reading your Tilt hydrometer on a Raspberry Pi, storing the
 results as CSV, and mailing you summaries and plots.  Intended for
 use as two cron jobs (recording data and mailing plots).
 
+## TODO
+
+* check https://github.com/switchdoclabs/iBeacon-Scanner- note
+  "Replaced by github.com/switchdoclabs/SDL_Pi_iBeaconScanner 2020" and see
+  if `blescan-py` needs to be updated
+
 ## Dependencies
 
 * python bluez, matplotlib, pandas
