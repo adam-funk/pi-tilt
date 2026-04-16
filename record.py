@@ -118,7 +118,7 @@ def store_data(config0, base_dir0, verbose, data_lines):
             output_path = os.path.join(base_dir0, output_file)
             if verbose:
                 print(f'Output: {output_path}')
-            write_header = not os.exists(output_path)
+            write_header = not os.path.exists(output_path)
             with open(output_path, 'a') as f0:
                 writer = csv.writer(f0, lineterminator='\n')
                 if write_header:
