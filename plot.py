@@ -7,6 +7,7 @@ import subprocess
 import warnings
 from email.message import EmailMessage
 from io import BytesIO
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
