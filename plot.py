@@ -68,7 +68,7 @@ def get_data(input_file: str):
         warnings.filterwarnings(action='ignore', message='All-NaN slice encountered')
         date_data = data1.groupby('date').agg({'sg': columns,
                                                'c': columns}).rename(columns={'meanr': 'mean', 'medianr': 'mdn'})
-    return data0, date_data, deleted0
+    return data1, date_data, deleted0
 
 
 def clean_data(data0: pd.DataFrame) -> Tuple[pd.DataFrame, int]:
