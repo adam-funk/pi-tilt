@@ -72,10 +72,10 @@ def get_data(input_file: str):
 
 
 def clean_data(data0: pd.DataFrame) -> Tuple[pd.DataFrame, int]:
-    nbr_rows = data0.shape[0]
-    data1 = data0[(data0.f > MIN_TEMP_F) & (data0.f < MAX_TEMP_F)]
-    deleted = nbr_rows - data0.shape[0]
-    return data1, deleted
+    # data1 = data0[(data0.f > MIN_TEMP_F) & (data0.f < MAX_TEMP_F)]
+    rows_to_drop = data0[(data0.f < MIN_TEMP_F) | (data0.f > MAX_TEMP_F)].index
+    data1 = data0.drop(rows_to_drop)
+    return data1, len(rows_to_drop)
 
 
 def make_plots(data0, data_by_date0):
