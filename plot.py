@@ -57,24 +57,24 @@ def get_data(input_file: str):
         print(f'File not found: {input_file}')
         sys.exit(1)
         return None, None
-    clean_data(data0) # inplace
-    data0['time'] = pd.to_datetime(data0['iso'])
-    data0['date'] = data0['time'].dt.date
-    data0['c'] = round(data0['c'], 1)
+    data1, deleted = clean_data(data0)
+    data1['time'] = pd.to_datetime(data0['iso'])
+    data1['date'] = data0['time'].dt.date
+    data1['c'] = round(data0['c'], 1)
     # aggregated by date
     columns = [min, meanr, medianr, max]
     with warnings.catch_warnings():
         warnings.filterwarnings(action='ignore', message='All-NaN slice encountered')
-        date_data = data0.groupby('date').agg({'sg': columns,
+        date_data = data1.groupby('date').agg({'sg': columns,
                                                'c': columns}).rename(columns={'meanr': 'mean', 'medianr': 'mdn'})
-    return data0, date_data
+    return data0, date_data, deleted
 
 
-def clean_data(data0: pd.DataFrame) -> int:
+def clean_data(data0: pd.DataFrame) -> Tuple[pd.DataFrame, int]:
     nbr_rows = data0.shape[0]
-    data0 = data0[(data0.f > MIN_TEMP_F) & (data0.f < MAX_TEMP_F)]
+    data1 = data0[(data0.f > MIN_TEMP_F) & (data0.f < MAX_TEMP_F)]
     deleted = nbr_rows - data0.shape[0]
-    return deleted
+    return data1, deleted
 
 
 def make_plots(data0, data_by_date0):
@@ -145,6 +145,11 @@ def add_html(html: str, mail0: EmailMessage):
                          maintype='text', subtype='html')
 
 
+def add_text(text: str, mail0: EmailMessage):
+    mail0.add_attachment(text.encode('utf-8'), disposition='inline',
+                         maintype='text', subtype='plain')
+
+
 oparser = argparse.ArgumentParser(description="Mail summary and plots of Tilt hydrometer data",
                                   formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -173,7 +178,7 @@ for color, csv_file in config['hydrometers'].items():
     csv_path = os.path.join(base_dir, csv_file)
     if options.verbose:
         print(f'Loading CSV: {csv_path} for {color}')
-    data, data_by_date = get_data(csv_path)
+    data, data_by_date, deleted = get_data(csv_path)
     html_daily, html_summary, buffer_detail, buffer_daily_sg, buffer_daily_c = make_plots(data, data_by_date)
 
     mail = EmailMessage()
@@ -186,6 +191,7 @@ for color, csv_file in config['hydrometers'].items():
 
     add_image_buffer(buffer_detail, mail)
     add_html(html_daily, mail)
+    add_text(f'Deleted {deleted} rows', mail)
     add_image_buffer(buffer_daily_sg, mail)
     add_image_buffer(buffer_daily_c, mail)
     add_html(html_summary, mail)
