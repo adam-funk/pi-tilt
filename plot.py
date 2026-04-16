@@ -7,6 +7,7 @@ import subprocess
 import warnings
 from email.message import EmailMessage
 from io import BytesIO
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -15,6 +16,13 @@ from matplotlib.figure import Figure
 
 FIG_SIZE = (15, 6)
 IMAGE_TYPE = 'png'
+
+# https://tilthydrometer.com/pages/faqs
+# temperature range is 0 to 185°F
+MIN_TEMP_F = 0
+MAX_TEMP_F = 185
+
+COLUMN_NAMES = ['color', 'epoch', 'iso', 'sg', 'c', 'f', 'n', 'raw_sg']
 
 
 # https://stackoverflow.com/questions/4931376/generating-matplotlib-graphs-without-a-running-x-server
@@ -43,19 +51,31 @@ def medianr(x):
     return result
 
 
-def get_data(input_file):
-    data0 = pd.read_csv(input_file, names=['color', 'epoch', 'iso', 'sg', 'c', 'f', 'n', 'raw_sg'],
-                        index_col='epoch')
-    data0['time'] = pd.to_datetime(data0['iso'])
-    data0['date'] = data0['time'].dt.date
-    data0['c'] = round(data0['c'], 1)
+def get_data(input_file: str):
+    try:
+        data0 = pd.read_csv(input_file, names=COLUMN_NAMES, index_col='epoch')
+    except FileNotFoundError:
+        print(f'File not found: {input_file}')
+        sys.exit(1)
+        return None, None
+    data1, deleted0 = clean_data(data0)
+    data1['time'] = pd.to_datetime(data1['iso'])
+    data1['date'] = data1['time'].dt.date
+    data1['c'] = round(data1['c'], 1)
     # aggregated by date
     columns = [min, meanr, medianr, max]
     with warnings.catch_warnings():
         warnings.filterwarnings(action='ignore', message='All-NaN slice encountered')
-        date_data = data0.groupby('date').agg({'sg': columns,
+        date_data = data1.groupby('date').agg({'sg': columns,
                                                'c': columns}).rename(columns={'meanr': 'mean', 'medianr': 'mdn'})
-    return data0, date_data
+    return data1, date_data, deleted0
+
+
+def clean_data(data0: pd.DataFrame) -> Tuple[pd.DataFrame, int]:
+    # data1 = data0[(data0.f > MIN_TEMP_F) & (data0.f < MAX_TEMP_F)]
+    rows_to_drop = data0[(data0.f < MIN_TEMP_F) | (data0.f > MAX_TEMP_F)].index
+    data1 = data0.drop(rows_to_drop)
+    return data1, len(rows_to_drop)
 
 
 def make_plots(data0, data_by_date0):
@@ -78,8 +98,8 @@ def make_plots(data0, data_by_date0):
     ax4b.xaxis.set_major_formatter(days_format)
     ax4b.format_xdata = days_format
     ax4b.grid(True, which='both')
-    ax4a.plot(data0['time'], data0['sg'], color="purple")
     ax4b.plot(data0['time'], data0['c'], color="red")
+    ax4a.plot(data0['time'], data0['sg'], color="purple")
     fig4.legend(['sg', 'c'], loc='center right')
     fig4.savefig(buffer0, dpi=200, format=IMAGE_TYPE)
 
@@ -126,6 +146,11 @@ def add_html(html: str, mail0: EmailMessage):
                          maintype='text', subtype='html')
 
 
+def add_text(text: str, mail0: EmailMessage):
+    mail0.add_attachment(text.encode('utf-8'), disposition='inline',
+                         maintype='text', subtype='plain')
+
+
 oparser = argparse.ArgumentParser(description="Mail summary and plots of Tilt hydrometer data",
                                   formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -154,7 +179,7 @@ for color, csv_file in config['hydrometers'].items():
     csv_path = os.path.join(base_dir, csv_file)
     if options.verbose:
         print(f'Loading CSV: {csv_path} for {color}')
-    data, data_by_date = get_data(csv_path)
+    data, data_by_date, deleted = get_data(csv_path)
     html_daily, html_summary, buffer_detail, buffer_daily_sg, buffer_daily_c = make_plots(data, data_by_date)
 
     mail = EmailMessage()
@@ -167,6 +192,7 @@ for color, csv_file in config['hydrometers'].items():
 
     add_image_buffer(buffer_detail, mail)
     add_html(html_daily, mail)
+    add_text(f'Deleted {deleted} rows', mail)
     add_image_buffer(buffer_daily_sg, mail)
     add_image_buffer(buffer_daily_c, mail)
     add_html(html_summary, mail)

@@ -6,7 +6,9 @@ use as two cron jobs (recording data and mailing plots).
 
 ## TODO
 
-* plot: detect missing file and send sensible message
+* plot: skip lines with outrageous values
+* record: write header when starting the new file
+* plot: use the header from the CSV file
 
 ## Dependencies
 
