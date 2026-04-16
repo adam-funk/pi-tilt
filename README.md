@@ -6,9 +6,7 @@ use as two cron jobs (recording data and mailing plots).
 
 ## TODO
 
-* plot: detect missing file and send a sensible message
 * plot: skip lines with outrageous values
-  * note: https://tilthydrometer.com/pages/faqs temperature range is 0 to 185°F
 * record: write header when starting the new file
 * plot: use the header from the CSV file
 

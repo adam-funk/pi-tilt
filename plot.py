@@ -16,6 +16,13 @@ from matplotlib.figure import Figure
 FIG_SIZE = (15, 6)
 IMAGE_TYPE = 'png'
 
+# https://tilthydrometer.com/pages/faqs
+# temperature range is 0 to 185°F
+MIN_TEMP_F = 0
+MAX_TEMP_F = 185
+
+COLUMN_NAMES = ['color', 'epoch', 'iso', 'sg', 'c', 'f', 'n', 'raw_sg']
+
 
 # https://stackoverflow.com/questions/4931376/generating-matplotlib-graphs-without-a-running-x-server
 # https://matplotlib.org/gallery/text_labels_and_annotations/date.html
@@ -43,9 +50,14 @@ def medianr(x):
     return result
 
 
-def get_data(input_file):
-    data0 = pd.read_csv(input_file, names=['color', 'epoch', 'iso', 'sg', 'c', 'f', 'n', 'raw_sg'],
-                        index_col='epoch')
+def get_data(input_file: str):
+    try:
+        data0 = pd.read_csv(input_file, names=COLUMN_NAMES, index_col='epoch')
+    except FileNotFoundError:
+        print(f'File not found: {input_file}')
+        sys.exit(1)
+        return None, None
+    clean_data(data0) # inplace
     data0['time'] = pd.to_datetime(data0['iso'])
     data0['date'] = data0['time'].dt.date
     data0['c'] = round(data0['c'], 1)
@@ -56,6 +68,13 @@ def get_data(input_file):
         date_data = data0.groupby('date').agg({'sg': columns,
                                                'c': columns}).rename(columns={'meanr': 'mean', 'medianr': 'mdn'})
     return data0, date_data
+
+
+def clean_data(data0: pd.DataFrame) -> int:
+    nbr_rows = data0.shape[0]
+    data0 = data0[(data0.f > MIN_TEMP_F) & (data0.f < MAX_TEMP_F)]
+    deleted = nbr_rows - data0.shape[0]
+    return deleted
 
 
 def make_plots(data0, data_by_date0):
