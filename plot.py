@@ -58,17 +58,17 @@ def get_data(input_file: str):
         print(f'File not found: {input_file}')
         sys.exit(1)
         return None, None
-    data1, deleted = clean_data(data0)
-    data1['time'] = pd.to_datetime(data0['iso'])
-    data1['date'] = data0['time'].dt.date
-    data1['c'] = round(data0['c'], 1)
+    data1, deleted0 = clean_data(data0)
+    data1['time'] = pd.to_datetime(data1['iso'])
+    data1['date'] = data1['time'].dt.date
+    data1['c'] = round(data1['c'], 1)
     # aggregated by date
     columns = [min, meanr, medianr, max]
     with warnings.catch_warnings():
         warnings.filterwarnings(action='ignore', message='All-NaN slice encountered')
         date_data = data1.groupby('date').agg({'sg': columns,
                                                'c': columns}).rename(columns={'meanr': 'mean', 'medianr': 'mdn'})
-    return data0, date_data, deleted
+    return data0, date_data, deleted0
 
 
 def clean_data(data0: pd.DataFrame) -> Tuple[pd.DataFrame, int]:
